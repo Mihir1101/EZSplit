@@ -4,7 +4,23 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Call
 import asyncio
 
 async def add_all(update: Update, context: CallbackContext):
-    
+    # "from" paid "amt" for all
+    url = 'http://localhost:5000/api/expenses/create/all'
+    if (len(context.args)>0):
+        #addedByhandle, fromUserhandle, amount, grpName
+        added_by = update.effective_user.username
+        from_user = context.args[0]
+        amt = (context.args[2])
+        group_name = update.effective_chat.title
+        
+        obj = {"addedByhandle": added_by,"fromUserhandle": from_user,"amount": amt,"grpName": group_name}
+        post_res = requests.post(url, json = obj)
+        if (post_res.status_code == 200):
+            await update.message.reply_text("Added expense!")
+        else:
+            await update.message.reply_text("error adding expense!")
+    else:
+        await update.message.reply_text("expected params not specified")
 
 async def add_expense(update: Update, context: CallbackContext):
     # "from" lends "amt" to "to"
@@ -83,6 +99,7 @@ def main():
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('settle',settle))
     application.add_handler(CommandHandler('add', add_expense))
+    application.add_handler(CommandHandler('addAll', add_all))
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     application.add_handler(CallbackQueryHandler(button_call_2))
     application.run_polling()
