@@ -17,14 +17,14 @@ exports.addExpense = catchAsync(async (req, res, next) => {
     });
   }
   // if (A,B) already exists
-  let ex = await Expense.find({
+  const ex = await Expense.find({
     fromUser: fromUser,
     toUser: toUser,
     inGroup: inGroup,
   });
 
   // if (B,A) already exists
-  let ex2 = await Expense.find({
+  const ex2 = await Expense.find({
     fromUser: toUser,
     toUser: fromUser,
     inGroup: inGroup,
@@ -108,12 +108,12 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
 
   for (let user in toUsers) {
     if (user != fromUser) {
-      let ex = await Expense.find({
+      const ex = await Expense.find({
         fromUser: fromUser,
         toUser: user,
         inGroup: inGroup,
       });
-      let ex2 = await Expense.find({
+      const ex2 = await Expense.find({
         fromUser: user,
         toUser: fromUser,
         inGroup: inGroup,
@@ -129,12 +129,12 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
           inGroup,
         };
 
-        let ex = await Expense.findByIdAndUpdate(ex._id, updatedData, {
+        const exUpdated = await Expense.findByIdAndUpdate(ex._id, updatedData, {
           new: true, // Returns the updated document
           runValidators: true, // Enforces schema validation
         });
 
-        expenses.push(ex);
+        expenses.push(exUpdated);
       } else if (ex2) {
         let prevAmt = ex2.amount;
         let updatedAmt = prevAmt - amount;
@@ -146,7 +146,7 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
           inGroup,
         };
 
-        let ex = await Expense.findByIdAndUpdate(ex._id, updatedData, {
+        let exUpdated = await Expense.findByIdAndUpdate(ex._id, updatedData, {
           new: true, // Returns the updated document
           runValidators: true, // Enforces schema validation
         });
