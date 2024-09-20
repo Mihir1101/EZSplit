@@ -1,11 +1,44 @@
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext, ContextTypes, MessageHandler, filters
 import asyncio
+
+async def add_expense(update: Update, context: CallbackContext):
+    # "from" lends "amt" to "to"
+    url = ''
+    if context.args:
+        from_user = context.args[0]
+        amt = context.args[2]
+        to_user = context.args[4]
+        
+        
+    
+    
+
+async def welcome_new_members(update: Update, context: CallbackContext):
+    for new_member in update.message.new_chat_members:
+        bot_username = context.bot.username
+
+        # Direct message link to the bot
+        dm_link = f"https://t.me/{bot_username}"
+
+        # Create a welcome message with a button that redirects to bot's DM
+        welcome_message = (
+            f"Hello, {new_member.first_name}! Welcome to the group.\n"
+            "Please click the button below to send me a direct message and get started!"
+        )
+
+        # Inline keyboard button that opens a DM with the bot
+        keyboard = [[InlineKeyboardButton("Message me!", url=dm_link)]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        # Send the welcome message with the inline button
+        await update.message.reply_text(welcome_message, reply_markup=reply_markup)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
     await update.message.reply_text(f'Hello {update.effective_user.first_name}')
-    url=''
+    url='http://localhost:5000/api/user/getUser'
     username = update.effective_user.username
     params = {"tgHandle": username}
     try:
@@ -38,6 +71,7 @@ def main():
     application = Application.builder().token("7661907961:AAEEfUbKwaS4fStONwrryhuVNzKMnETloPM").build()
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('settle',settle))
+    application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     application.add_handler(CallbackQueryHandler(button_call_2))
     application.run_polling()
 
