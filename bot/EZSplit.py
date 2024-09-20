@@ -3,17 +3,21 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext, ContextTypes, MessageHandler, filters
 import asyncio
 
+async def add_all(update: Update, context: CallbackContext):
+    
+
 async def add_expense(update: Update, context: CallbackContext):
     # "from" lends "amt" to "to"
     url = 'http://localhost:5000/api/expenses/create'
-    if context.args:
+    if len(context.args)>0:
         added_by = update.effective_user.username
         from_user = context.args[0]
-        amt = context.args[2]
+        amt = (context.args[2])
         to_user = context.args[4]
+        print(from_user, to_user, type(amt))
         group_name = update.effective_chat.title
         #addedBy, fromUser, toUser, amount, inGroup
-        obj = {"addedBy" :added_by, "fromUser" :from_user, "toUser" :to_user, "amount" :amt, "inGroup":group_name}
+        obj = {"addedByhandle" :added_by, "fromUserhandle" :from_user, "toUserhandle" :to_user, "amt" :amt, "grpName":group_name}
         post_res = requests.post(url, json = obj)
         if (post_res.status_code == 200):
             await update.message.reply_text("Added expense!")
