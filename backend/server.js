@@ -8,6 +8,7 @@ const dotenv = require("dotenv");
 //routers
 const userRouter = require("./routes/userRouter");
 const groupRouter = require("./routes/groupRouter");
+const expenseRouter = require("./routes/expenseRouter");
 dotenv.config({});
 
 const DB = process.env.DATABASE.replace(
@@ -41,7 +42,9 @@ app.use(helmet());
 
 app.use("/api/user", userRouter);
 app.use("/api/group", groupRouter);
-//other errors if any during prod environment
+app.use("/api/expenses", expenseRouter);
+
+//handle other urls
 app.all("*", (req, res, next) => {
   next();
   return res.status(500).json({
