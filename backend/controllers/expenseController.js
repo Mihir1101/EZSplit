@@ -5,26 +5,29 @@ const Group = require("../models/groupModel");
 const User = require("../models/userModel");
 
 exports.addExpense = catchAsync(async (req, res, next) => {
-  const { addedByhandle, fromUserhandle, toUserhandle, amount, grpName } =
+  const { addedByhandle, fromUserhandle, toUserhandle, amt, grpName } =
     req.body;
-  const addedBy = await User.findOne({ tgHandle: addedByhandle })._id;
-  const fromUser = await User.findOne({ tgHandle: fromUserhandle })._id;
-  const toUser = await User.findOne({ tgHandle: toUserhandle })._id;
-  const inGroup = await Group.findOne({ name: grpName })._id;
+  const addedBy = (await User.findOne({ tgHandle: addedByhandle }))._id;
+  const fromUser = (await User.findOne({ tgHandle: fromUserhandle }))._id;
+  const toUser = (await User.findOne({ tgHandle: toUserhandle }))._id;
+  const inGroup = (await Group.findOne({ name: grpName }))._id;
+  const amount = Number(amt);
   if (fromUser == toUser) {
     res.status(200).json({
       message: "cannot add expense ",
     });
   }
+
+  console.log(amount);
   // if (A,B) already exists
-  const ex = await Expense.find({
+  const ex = await Expense.findOne({
     fromUser: fromUser,
     toUser: toUser,
     inGroup: inGroup,
   });
 
   // if (B,A) already exists
-  const ex2 = await Expense.find({
+  const ex2 = await Expense.findOne({
     fromUser: toUser,
     toUser: fromUser,
     inGroup: inGroup,
@@ -63,18 +66,19 @@ exports.addExpense = catchAsync(async (req, res, next) => {
       inGroup,
     };
 
-    let ex = await Expense.findByIdAndUpdate(ex._id, updatedData, {
+    let exUpdated = await Expense.findByIdAndUpdate(ex._id, updatedData, {
       new: true, // Returns the updated document
       runValidators: true, // Enforces schema validation
     });
 
-    if (ex) {
+    if (exUpdated) {
       res.status(200).json({
         status: "success",
-        data: ex,
+        data: exUpdated,
       });
     }
   } else {
+    console.log(amount);
     const expense = await Expense.create({
       addedBy,
       fromUser,
@@ -91,7 +95,7 @@ exports.addExpense = catchAsync(async (req, res, next) => {
     }
   }
 
-  return new AppError("expense not created", 404);
+  return next(new AppError("expense not created", 404));
 });
 
 exports.addExpenseAll = catchAsync(async (req, res, next) => {

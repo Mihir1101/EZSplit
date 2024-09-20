@@ -3,6 +3,9 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext, ContextTypes, MessageHandler, filters
 import asyncio
 
+# async def get_balance(update: Update, context: CallbackContext):
+    
+
 async def add_all(update: Update, context: CallbackContext):
     # "from" paid "amt" for all
     url = 'http://localhost:5000/api/expenses/create/all'
@@ -10,6 +13,7 @@ async def add_all(update: Update, context: CallbackContext):
         #addedByhandle, fromUserhandle, amount, grpName
         added_by = update.effective_user.username
         from_user = context.args[0]
+        from_user = from_user[1:]
         amt = (context.args[2])
         group_name = update.effective_chat.title
         
@@ -28,8 +32,10 @@ async def add_expense(update: Update, context: CallbackContext):
     if len(context.args)>0:
         added_by = update.effective_user.username
         from_user = context.args[0]
+        from_user = from_user[1:]
         amt = (context.args[2])
         to_user = context.args[4]
+        to_user = to_user[1:]
         print(from_user, to_user, type(amt))
         group_name = update.effective_chat.title
         #addedBy, fromUser, toUser, amount, inGroup
