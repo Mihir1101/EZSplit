@@ -14,7 +14,8 @@
     "express": "^4.21.0",
     "helmet": "^7.1.0",
     "mongoose": "^8.6.3",
-    "web3-validator": "^2.0.6"
+    "web3-validator": "^2.0.6",
+    "ethers": "5.7.2"
   },
   "author": "",
   "license": "ISC"
