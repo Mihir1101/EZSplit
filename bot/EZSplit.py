@@ -5,15 +5,22 @@ import asyncio
 
 async def add_expense(update: Update, context: CallbackContext):
     # "from" lends "amt" to "to"
-    url = ''
+    url = 'http://localhost:5000/api/expenses/create'
     if context.args:
+        added_by = update.effective_user.username
         from_user = context.args[0]
         amt = context.args[2]
         to_user = context.args[4]
-        
-        
-    
-    
+        group_name = update.effective_chat.title
+        #addedBy, fromUser, toUser, amount, inGroup
+        obj = {"addedBy" :added_by, "fromUser" :from_user, "toUser" :to_user, "amount" :amt, "inGroup":group_name}
+        post_res = requests.post(url, json = obj)
+        if (post_res.status_code == 200):
+            await update.message.reply_text("Added expense!")
+        else:
+            await update.message.reply_text("error adding expense!")
+    else:
+        await update.message.reply_text("expected params not specified")
 
 async def welcome_new_members(update: Update, context: CallbackContext):
     for new_member in update.message.new_chat_members:
@@ -71,6 +78,7 @@ def main():
     application = Application.builder().token("7661907961:AAEEfUbKwaS4fStONwrryhuVNzKMnETloPM").build()
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('settle',settle))
+    application.add_handler(CommandHandler('add', add_expense))
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     application.add_handler(CallbackQueryHandler(button_call_2))
     application.run_polling()
