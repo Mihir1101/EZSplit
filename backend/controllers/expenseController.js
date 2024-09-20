@@ -5,7 +5,8 @@ const Group = require("../models/groupModel");
 const User = require("../models/userModel");
 
 exports.addExpense = catchAsync(async (req, res, next) => {
-  const { addedBy, fromUser, toUser, amount, inGroup } = req.body;
+  const { addedBy, fromUser, toUser, amount, grpName } = req.body;
+  const inGroup = await Group.findOne({ name: grpName });
   if (fromUser == toUser) {
     res.status(200).json({
       message: "cannot add expense ",
@@ -90,7 +91,8 @@ exports.addExpense = catchAsync(async (req, res, next) => {
 });
 
 exports.addExpenseAll = catchAsync(async (req, res, next) => {
-  const { addedBy, fromUser, amount, inGroup } = req.body;
+  const { addedBy, fromUser, amount, grpName } = req.body;
+  const inGroup = await Group.findOne({ name: grpName });
   //create expense in the database
   let expenses = [];
 
