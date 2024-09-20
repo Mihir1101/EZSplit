@@ -3,17 +3,15 @@ const AppError = require("./../utils/appError");
 const Group = require("./../models/groupModel");
 
 exports.createGroup = catchAsync(async (req, res, next) => {
-  //create user in the database
-  const user = await User.create({
-    name: name,
-    tgHandle: tgHandle,
-    multisigAddress: safeAddress,
+  const { grpName } = req.body;
+  const grp = await Group.create({
+    name: grpName,
   });
 
-  if (user) {
+  if (grp) {
     res.status(200).json({
       status: "success",
-      data: user,
+      data: grp,
     });
   }
   return new AppError("user not created", 404);
