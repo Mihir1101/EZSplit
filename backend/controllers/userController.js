@@ -12,7 +12,7 @@ const User = require("./../models/userModel");
 // }).then(() => console.log("safe address initiated"));
 
 exports.createUser = catchAsync(async (req, res, next) => {
-  const { name, tgHandle } = req.body;
+  const { name, tgHandle, userAddr } = req.body;
 
   //create a multisig 1-in-2 for this user , add in database
   // global helper Address, local user Address

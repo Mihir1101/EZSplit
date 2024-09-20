@@ -5,7 +5,12 @@ const Group = require("../models/groupModel");
 const User = require("../models/userModel");
 
 exports.addExpense = catchAsync(async (req, res, next) => {
-  const { addedBy, fromUser, toUser, amount, inGroup } = req.body;
+  const { addedByhandle, fromUserhandle, toUserhandle, amount, grpName } =
+    req.body;
+  const addedBy = await User.findOne({ tgHandle: addedByhandle })._id;
+  const fromUser = await User.findOne({ tgHandle: fromUserhandle })._id;
+  const toUser = await User.findOne({ tgHandle: toUserhandle })._id;
+  const inGroup = await Group.findOne({ name: grpName })._id;
   if (fromUser == toUser) {
     res.status(200).json({
       message: "cannot add expense ",
@@ -47,7 +52,7 @@ exports.addExpense = catchAsync(async (req, res, next) => {
         data: ex,
       });
     }
-  } else if (ex2) {
+  } else if (ex2 && !ex) {
     let prevAmt = ex2.amount;
     let updatedAmt = prevAmt - amount;
     const updatedData = {
@@ -90,7 +95,10 @@ exports.addExpense = catchAsync(async (req, res, next) => {
 });
 
 exports.addExpenseAll = catchAsync(async (req, res, next) => {
-  const { addedBy, fromUser, amount, inGroup } = req.body;
+  const { addedByhandle, fromUserhandle, amount, grpName } = req.body;
+  const addedBy = await User.findOne({ tgHandle: addedByhandle })._id;
+  const fromUser = await User.findOne({ tgHandle: fromUserhandle })._id;
+  const inGroup = await Group.findOne({ name: grpName })._id;
   //create expense in the database
   let expenses = [];
 
