@@ -52,7 +52,7 @@ exports.addExpense = catchAsync(async (req, res, next) => {
         data: ex,
       });
     }
-  } else if (ex2) {
+  } else if (ex2 && !ex) {
     let prevAmt = ex2.amount;
     let updatedAmt = prevAmt - amount;
     const updatedData = {
