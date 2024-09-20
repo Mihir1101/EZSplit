@@ -3,24 +3,6 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext, ContextTypes
 import asyncio
 
-async def create_multi(username):
-    url=''
-    params = {"tgHandle": username}
-    try:
-        get_res = requests.get(url, params=params)
-        if (get_res.status_code == 200):
-            user_final = get_res.json
-            addr = user_final["multisigAddress"]
-            return addr
-        else:
-            error = "multisig not found! create one at our application."
-            return error
-        
-    except requests.exceptions.RequestException as e:
-        print('Error:', e)
-        return None
-    
-    
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
     await update.message.reply_text(f'Hello {update.effective_user.first_name}')
     url=''
@@ -33,7 +15,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
             addr = user_final["multisigAddress"]
             await update.message.reply_text(f"Your multisig address is: {addr}")
         else:
-            error = "multisig not found! create one at our application."
             await update.message.reply_text(f"Your multisig is not yet created! please create it on our application.")
         
     except requests.exceptions.RequestException as e:
