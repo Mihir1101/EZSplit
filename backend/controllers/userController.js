@@ -1,30 +1,30 @@
-import { SafeFactory, SafeAccountConfig } from "@safe-global/protocol-kit";
+const { SafeFactory, SafeAccountConfig } = require("@safe-global/protocol-kit");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const User = require("./../models/userModel");
 
-const provider = "https://rpc-holesky.morphl2.io"; // rpc url
-const signer = "0x4E238321ed92d96AcEe377EB607FAc8C845aAC75"; // signer address
+// const provider = "https://rpc-holesky.morphl2.io"; // rpc url
+// const signer = "0x4E238321ed92d96AcEe377EB607FAc8C845aAC75"; // signer address
 
-const safeFactory = await SafeFactory.init({
-  provider,
-  signer,
-});
+// const safeFactory = SafeFactory.init({
+//   provider,
+//   signer,
+// }).then(() => console.log("safe address initiated"));
 
 exports.createUser = catchAsync(async (req, res, next) => {
   const { name, tgHandle } = req.body;
 
   //create a multisig 1-in-2 for this user , add in database
   // global helper Address, local user Address
-  const owners = [userAddr, helperAddr];
-  const threshold = 1;
-  const safeAccountConfig = {
-    owners,
-    threshold,
-  };
+  // const owners = [userAddr, helperAddr];
+  // const threshold = 1;
+  // const safeAccountConfig = {
+  //   owners,
+  //   threshold,
+  // };
 
-  const protocolKit = await safeFactory.deploySafe({ safeAccountConfig });
-  const safeAddress = await protocolKit.getAddress();
+  // const protocolKit = await safeFactory.deploySafe({ safeAccountConfig });
+  // const safeAddress = await protocolKit.getAddress();
 
   // const addr= /**/
 
@@ -32,7 +32,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
   const user = await User.create({
     name: name,
     tgHandle: tgHandle,
-    multisigAddress: safeAddress,
+    multisigAddress: "", //safeAddress
   });
 
   if (user) {
@@ -58,8 +58,6 @@ exports.getUser = catchAsync(async (req, res, next) => {
   }
 });
 
-
 exports.getBalancesOfUser = catchAsync(async (req, res, next) => {
-  const {user,toUser}=req.body;
-  
+  const { user, toUser } = req.body;
 });

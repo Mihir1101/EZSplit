@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { isEmail } = require("validator");
 const { isAddress } = require("web3-validator");
 const userSchema = new mongoose.Schema({
   name: {

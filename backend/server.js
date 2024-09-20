@@ -4,7 +4,10 @@ const helmet = require("helmet");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+
+//routers
 const userRouter = require("./routes/userRouter");
+const groupRouter = require("./routes/groupRouter");
 dotenv.config({});
 
 const DB = process.env.DATABASE.replace(
@@ -17,28 +20,31 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("DB connection successful!"));
+  .then(() => {
+    console.log("DB connection successful!");
+
+    const port = `${process.env.PORT}`;
+
+    app.listen(port || 5000, () => {
+      console.log(`listening to the port ${port}`);
+    });
+  });
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
+
 // Set security HTTP headers
 app.use(helmet());
 
 app.use("/api/user", userRouter);
-
+app.use("/api/group", groupRouter);
 //other errors if any during prod environment
 app.all("*", (req, res, next) => {
   next();
   return res.status(500).json({
     message: "not handled on backend",
   });
-});
-
-const port = `${process.env.PORT}`;
-
-app.listen(port || 5000, () => {
-  console.log(`listening to the port ${port}`);
 });
