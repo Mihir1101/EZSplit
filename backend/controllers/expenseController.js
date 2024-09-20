@@ -41,18 +41,18 @@ exports.addExpense = catchAsync(async (req, res, next) => {
       inGroup,
     };
 
-    let ex = await Expense.findByIdAndUpdate(ex._id, updatedData, {
+    let exUpdated = await Expense.findByIdAndUpdate(ex._id, updatedData, {
       new: true, // Returns the updated document
       runValidators: true, // Enforces schema validation
     });
 
-    if (ex) {
+    if (exUpdated) {
       res.status(200).json({
         status: "success",
-        data: ex,
+        data: exUpdated,
       });
     }
-  } else if (ex2 && !ex) {
+  } else if (ex2) {
     let prevAmt = ex2.amount;
     let updatedAmt = prevAmt - amount;
     const updatedData = {
