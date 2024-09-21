@@ -66,6 +66,7 @@ export const Connect = () => {
                     </span>
                     <span className="backdrop" />
                     <span className="text">Connected</span>
+                    <span className="text-xs text">{account.slice(0, 4) + "...." + account.slice(account.length - 5, account.length)}</span>
                 </button>
             ) : (
                 <Button
