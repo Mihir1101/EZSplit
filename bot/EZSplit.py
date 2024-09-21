@@ -195,11 +195,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
 async def settle(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
     userhandle = update.effective_user.username
     await update.message.reply_text(f"hey! {userhandle}, you can choose any exxpense to settle.")
+    grpname = update.effective_chat.title
     
-    url = 'http://localhost:5000/api/expenses/get/{grpname}/{username}'
+    url = f'http://localhost:5000/api/expenses/get/{grpname}/{userhandle}'
     # params = {"grpName":grpname,"tgHandle": username}
     try:
         get_res=requests.get(url)
+        print(get_res)
         data1=get_res.json()
         data=data1["data"]
         
@@ -216,8 +218,9 @@ async def settle(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
                 button_data += [f"{amt} to {name} [{handle}]"]
                 handles +=[handle]
                 amounts += [amt]
+                print(amt, handle)
 
-        buttons = [[InlineKeyboardButton(text=button_data[item], callback_data=(handles[item], amounts[item]))] for item in range(len(button_data))]
+        buttons = [[InlineKeyboardButton(text=button_data[item], callback_data=handles[item]+","+str(amounts[item]))] for item in range(len(button_data))]
         reply_markup = InlineKeyboardMarkup(buttons)
         await update.message.reply_text(":)",reply_markup=reply_markup)
         
@@ -230,12 +233,13 @@ async def button_callback(update: Update, context: CallbackContext):
     await query.answer()  # Acknowledge the query
     await query.edit_message_text(f"You selected: {query.data}")
     userhandle = query.from_user.username
-    amount = query.data[1]
-    to = query.data[0]
+    amt_to = query.data.split(',')
+    amount = amt_to[1]
+    to = amt_to[0]
     url = 'http://localhost:5000/api/expenses/settle'
     
     obj = {"from" : userhandle, "to" : to, "amount" : amount}
-    post_res = await requests.post(url,json=obj)
+    post_res = requests.post(url,json=obj)
 
 def main():
     application = Application.builder().token("7661907961:AAEEfUbKwaS4fStONwrryhuVNzKMnETloPM").build()
