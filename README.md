@@ -1,6 +1,8 @@
 # EZSplit
 
-![alt text](https://github.com/Mihir1101/EZSplit/blob/main/website/src/assets/images/EZ_Split.png)
+<div style="display: flex; justify-content: center;">
+    <img src="https://github.com/Mihir1101/EZSplit/blob/main/website/src/assets/images/EZ_Split.png" alt="EZSplit" />
+</div>
 
 ## Introduction
 
