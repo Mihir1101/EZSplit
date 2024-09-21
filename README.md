@@ -1,6 +1,6 @@
 # EZSplit
 
-![alt text](https://github.com/Mihir1101/EZSplit/blob/main/website/assets/images/EZ_Split.jpg?raw=true)
+![alt text](https://github.com/Mihir1101/EZSplit/blob/main/website/src/assets/images/EZ_Split.png)
 
 ## Introduction
 
