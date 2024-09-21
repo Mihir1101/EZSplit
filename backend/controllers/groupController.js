@@ -21,19 +21,27 @@ exports.createGroup = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.getGroup = catchAsync(async (req, res, next) => {
+exports.getGroupMembers = catchAsync(async (req, res, next) => {
   const grpName = req.params.grpName;
-  const grp = await Group.findOne({ name: grpName }).populate(
-    "users",
-    "expenses"
-  );
+  const grp = await Group.findOne({ name: grpName });
+
   if (!grp) {
-    return next(new AppError("user is not created yet", 404));
+    return new AppError("user is not created yet", 404);
   }
+
+  const users = grp.users;
+  let members = [];
+  for (const user_id of users) {
+    const user = await User.findById(user_id);
+    const name = user.name;
+    const tgHandle = user.tgHandle;
+    members.push({ name, tgHandle });
+  }
+  console.log(grpName, grp, members);
 
   res.status(200).json({
     status: "success",
-    data: grp,
+    data: members,
   });
 });
 
@@ -43,18 +51,25 @@ exports.updateGroup = catchAsync(async (req, res, next) => {
   const grp = await Group.findOne({ name: grpName });
   const user_detail = await User.findOne({ tgHandle: user });
 
-  let users = grp.users;
-  users.push(user_detail._id);
+  if (!grp.users.includes(user_detail._id)) {
+    let users = grp.users;
+    users.push(user_detail._id);
 
-  let grpUpdated = await Group.findByIdAndUpdate(grp._id, {
-    users,
-  });
-  if (grpUpdated) {
-    return res.status(200).json({
-      message: "success",
-      data: grpUpdated,
+    let grpUpdated = await Group.findByIdAndUpdate(grp._id, {
+      users,
     });
+    if (grpUpdated) {
+      res.status(200).json({
+        message: "success",
+        data: grpUpdated,
+      });
+    } else {
+      return new AppError("group not updated", 404);
+    }
   } else {
-    return next(new AppError("group not updated", 404));
+    res.status(200).json({
+      message: "already added in group",
+      data: grp,
+    });
   }
 });

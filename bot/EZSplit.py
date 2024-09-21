@@ -15,14 +15,24 @@ import asyncio
         
 
 async def members_info(update: Update, context: CallbackContext):
-    url = "http://localhost:5000/api/group/getGroup"
     grpname = update.effective_chat.title
-    params = {"grpName":grpname}
-    
+    url = f"http://localhost:5000/api/group/getGroup/{grpname}"
+    # params = {"grpName":grpname}
     try:
-        get_res = requests.get(url, params=params)
-        data = get_res.json
+        get_res = requests.get(url)
+        data1 = get_res.json()
+        data=data1["data"]
         print(data)
+        text=""
+        for obj in data:
+            # Assuming each object has 'name' and 'tgHandle' fields
+            name = obj['name']  # Provide default if key is not found
+            handle = obj['tgHandle']  # Provide default if key is not found
+            # Print the fields
+            text += f"{name} [{handle}]\n" 
+
+        print(text)
+        await update.message.reply_text(text)
         # for data_val in data:
         #     handle = data_val["tgHandle"]
         #     name = data_val["name"]

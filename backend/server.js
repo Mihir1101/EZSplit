@@ -9,6 +9,7 @@ const dotenv = require("dotenv");
 const userRouter = require("./routes/userRouter");
 const groupRouter = require("./routes/groupRouter");
 const expenseRouter = require("./routes/expenseRouter");
+const { getGroup } = require("./controllers/groupController");
 dotenv.config({});
 
 const DB = process.env.DATABASE.replace(
@@ -33,19 +34,21 @@ mongoose
 
 const app = express();
 
+app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
 // Set security HTTP headers
 app.use(helmet());
-
+// app.use("api/group/getGroup/:grpName", getGroup);
 app.use("/api/user", userRouter);
 app.use("/api/group", groupRouter);
 app.use("/api/expenses", expenseRouter);
 
 //handle other urls
 app.all("*", (req, res, next) => {
+  console.log(`${req.url}`);
   res.status(500).json({
     message: "not handled on backend",
   });
