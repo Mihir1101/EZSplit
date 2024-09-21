@@ -224,6 +224,7 @@ exports.getExpensesForGroup = catchAsync(async (req, res, next) => {
 
 exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   const { grpName, tgHandle } = req.params;
+  console.log(grpName, tgHandle);
   const user = await User.findOne({ tgHandle: tgHandle });
   console.log(user);
   const expensesOfGroupAndUser = await Expense.findOne({
@@ -234,23 +235,28 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   let final_expenses = [];
 
   let owe = true;
-  expensesOfGroupAndUser.forEach(async (expenses) => {
-    let fromUser = await User.findById(expenses.fromUser);
-    const [name, tgHandle] = [fromUser.name, fromUser.tgHandle];
-    final_expenses.push({ name, tgHandle, amount, owe });
-  });
+  if (expensesOfGroupAndUser) {
+    expensesOfGroupAndUser.forEach(async (expenses) => {
+      let fromUser = await User.findById(expenses.fromUser);
+      const [name, tgHandle] = [fromUser.name, fromUser.tgHandle];
+      final_expenses.push({ name, tgHandle, amount, owe });
+    });
+  }
 
   owe = false;
   const expensesOfGroupAndUser2 = await Expense.findOne({
     name: grpName,
     fromUser: user._id,
   });
-  expensesOfGroupAndUser2.forEach(async (expenses) => {
-    let toUser = await User.findById(expenses.toUser);
-    const [name, tgHandle] = [toUser.name, toUser.tgHandle];
-    final_expenses.push({ name, tgHandle, amount, owe });
-  });
-  console.log(final_expenses);
+  console.log(expensesOfGroupAndUser2);
+  if (expensesOfGroupAndUser2) {
+    expensesOfGroupAndUser2.forEach(async (expenses) => {
+      let toUser = await User.findById(expenses.toUser);
+      const [name, tgHandle] = [toUser.name, toUser.tgHandle];
+      final_expenses.push({ name, tgHandle, amount, owe });
+    });
+    console.log(final_expenses);
+  }
   res.status(200).json({
     message: "success",
     data: final_expenses,

@@ -23,6 +23,7 @@ exports.createGroup = catchAsync(async (req, res, next) => {
 
 exports.getGroupMembers = catchAsync(async (req, res, next) => {
   const grpName = req.params.grpName;
+  console.log(grpName);
   const grp = await Group.findOne({ name: grpName });
 
   if (!grp) {
@@ -37,7 +38,7 @@ exports.getGroupMembers = catchAsync(async (req, res, next) => {
     const tgHandle = user.tgHandle;
     members.push({ name, tgHandle });
   }
-  console.log(grpName, grp, members);
+  console.log(members);
 
   res.status(200).json({
     status: "success",
