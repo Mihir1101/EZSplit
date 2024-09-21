@@ -85,3 +85,8 @@ EZSplit is an application designed to simplify on-chain transaction management f
 
 - **Multisig Wallets**: For every user in the group, a multisig wallet is created, enhancing security and ensuring that transactions require confirmations.
 - **Transaction Signing**: When a settlement is initiated, the backend signs the transaction with the appropriate multisig wallet.
+
+## Deployed Contract Addresses
+
+- Morph Holesky testnet : `0x5723B944dce277168dB027b36021A0a7AE2419aE`
+- Linea sepolia testnet : `0x23f0aaf5367315c722f06d484d61a89eacb17182`
