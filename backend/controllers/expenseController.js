@@ -224,35 +224,45 @@ exports.getExpensesForGroup = catchAsync(async (req, res, next) => {
 
 exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   const { grpName, tgHandle } = req.params;
-  console.log(grpName, tgHandle);
+  //console.log(grpName, tgHandle);
   const user = await User.findOne({ tgHandle: tgHandle });
-  console.log(user);
-  const expensesOfGroupAndUser = await Expense.findOne({
-    name: grpName,
+  const group = await Group.findOne({ name: grpName });
+  //console.log(user);
+  const expensesOfGroupAndUser = await Expense.find({
+    inGroup: group._id,
     toUser: user._id,
   });
-  console.log(expensesOfGroupAndUser);
+  //console.log(expensesOfGroupAndUser);
   let final_expenses = [];
 
   let owe = true;
-  if (expensesOfGroupAndUser) {
+  if (expensesOfGroupAndUser.length > 0) {
     expensesOfGroupAndUser.forEach(async (expenses) => {
       let fromUser = await User.findById(expenses.fromUser);
-      const [name, tgHandle] = [fromUser.name, fromUser.tgHandle];
+      const [name, tgHandle, amount] = [
+        fromUser.name,
+        fromUser.tgHandle,
+        expenses.amount,
+      ];
       final_expenses.push({ name, tgHandle, amount, owe });
     });
   }
 
   owe = false;
-  const expensesOfGroupAndUser2 = await Expense.findOne({
-    name: grpName,
+  const expensesOfGroupAndUser2 = await Expense.find({
+    inGroup: group._id,
     fromUser: user._id,
   });
-  console.log(expensesOfGroupAndUser2);
-  if (expensesOfGroupAndUser2) {
+  console.log(expensesOfGroupAndUser2.length);
+  if (expensesOfGroupAndUser2.length > 0) {
     expensesOfGroupAndUser2.forEach(async (expenses) => {
       let toUser = await User.findById(expenses.toUser);
-      const [name, tgHandle] = [toUser.name, toUser.tgHandle];
+      const [name, tgHandle, amount] = [
+        toUser.name,
+        toUser.tgHandle,
+        expenses.amount,
+      ];
+      console.log(name, amount);
       final_expenses.push({ name, tgHandle, amount, owe });
     });
     console.log(final_expenses);
