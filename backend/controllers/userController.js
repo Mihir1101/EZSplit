@@ -1,128 +1,91 @@
-// const ethers = require("ethers");
-// const Safe = require("@safe-global/protocol-kit");
-// const CHAIN_INFO=require("./../chain")
-// const {
-//   EthersAdapter,
-//   SafeFactory,
-//   SafeAccountConfig,
-// } = require("@safe-global/protocol-kit");
+const ethers = require("ethers");
+const Safe = require("@safe-global/protocol-kit");
+const CHAIN_INFO = require("./../chain");
+const {
+  EthersAdapter,
+  SafeFactory,
+  SafeAccountConfig,
+} = require("@safe-global/protocol-kit");
 
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const User = require("./../models/userModel");
 
-// const provider = "https://rpc-holesky.morphl2.io"; // rpc url
-// const signer = "0x4E238321ed92d96AcEe377EB607FAc8C845aAC75"; // signer address
+// const rpcUrl = "https://rpc-holesky.morphl2.io"; // rpc url
 
-// // const safeFactory = SafeFactory.init({
-// //   provider,
-// //   signer,
-// // }).then(() => console.log("safe address initiated"));
+// const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+const helperAddr = "0x74bbf4b2223496C4547c44268242A5196E3c6499"; // signer address
 
-// const getEthAdapter = async () => {
-//   // Using ethers
-//   signer = provider.getSigner();
+// const safeFactory = SafeFactory.init({
+//   provider,
+//   signer,
+// }).then(() => console.log("safe address initiated"));
 
-//   console.log({ provider, signer });
+exports.getEthAdapter = async (rpcUrl) => {
+  // Using ethers
+  const provider = new ethers.providers.Web3Provider(rpcUrl);
+  signer = provider.getSigner();
 
-//   const ethAdapter = new EthersAdapter({
-//     ethers,
-//     signerOrProvider: signer || provider,
-//   });
+  // console.log({ provider, signer });
 
-//   console.log(provider, signer, ethAdapter);
+  const ethAdapter = new EthersAdapter({
+    ethers: ethers,
+    signerOrProvider: signer || provider,
+  });
 
-//   return ethAdapter;
-// };
-// const createMultisigWallet = async (
-//   owners, //Array<string>,
-//   threshold // number
-// ) => {
-//   console.log({ owners, threshold });
+  console.log(provider, signer, ethAdapter);
 
-//   const ethAdapter = await getEthAdapter();
-//   const chainId = await ethAdapter.getChainId();
-//   // const chainInfo = CHAIN_INFO[chainId.toString()];
-//   const safeFactory = await SafeFactory.create({ ethAdapter });
+  return ethAdapter;
+};
+const createMultisigWallet = async (
+  owners, //Array<string>,
+  threshold, // number
+  rpcUrl
+) => {
+  console.log({ owners, threshold });
 
-//   console.log({ ethAdapter, safeFactory });
+  const ethAdapter = await getEthAdapter(rpcUrl);
+  const chainId = await ethAdapter.getChainId();
+  const chainInfo = CHAIN_INFO[chainId.toString()];
+  const safeFactory = await SafeFactory.create({ ethAdapter });
 
-//   //SafeAccountConfig
-//   const safeAccountConfig = {
-//     owners,
-//     threshold,
-//   };
+  console.log({ ethAdapter, safeFactory });
 
-//   /* This Safe is connected to owner 1 because the factory was initialized 
-//   with an adapter that had owner 1 as the signer. */
-//   //Safe
-//   const safe = await safeFactory.deploySafe({ safeAccountConfig });
+  //SafeAccountConfig
+  const safeAccountConfig = {
+    owners,
+    threshold,
+  };
 
-//   const safeAddress = safe.getAddress();
+  /* This Safe is connected to owner 1 because the factory was initialized 
+  with an adapter that had owner 1 as the signer. */
+  //Safe
+  const safe = await safeFactory.deploySafe({ safeAccountConfig });
 
-//   console.log("Your Safe has been deployed:");
-//   console.log(`${chainInfo.blockExplorerUrl}/address/${safeAddress}`);
-//   console.log(`${chainInfo.transactionServiceUrl}/api/v1/safes/${safeAddress}`);
-//   console.log(`https://app.safe.global/${chainInfo.symbol}:${safeAddress}`);
+  const safeAddress = safe.getAddress();
 
-//   return safeAddress;
-// };
+  console.log("Your Safe has been deployed:");
+  console.log(`${chainInfo.blockExplorerUrl}/address/${safeAddress}`);
+  console.log(`${chainInfo.transactionServiceUrl}/api/v1/safes/${safeAddress}`);
+  console.log(`https://app.safe.global/${chainInfo.symbol}:${safeAddress}`);
 
-// const createTransaction = async (safeAddress, destination, amount) => {
-
-//  amount = ethers.utils.parseUnits(amount.toString(), 'ether').toString()
-//   // MetaTransactionData 
-//  const safeTransactionData= {
-//      to: destination,
-//      data: '0x',
-//      value: amount
-//  }
-
-//  const ethAdapter = await getEthAdapter();
-//  const safeSDK = await Safe.create({
-//      ethAdapter,
-//      safeAddress
-//  })
-
-//  const chainId = await ethAdapter.getChainId();
-//  const chainInfo = CHAIN_INFO[chainId.toString()];
-
-//  // Create a Safe transaction with the provided parameters
-//  const safeTransaction = await safeSDK.createTransaction({ safeTransactionData })
-
-//  // Deterministic hash based on transaction parameters
-//  const safeTxHash = await safeSDK.getTransactionHash(safeTransaction)
-
-//  // Sign transaction to verify that the transaction is coming from owner 1
-//  const senderSignature = await safeSDK.signTransactionHash(safeTxHash)
-
-//  const txServiceUrl = chainInfo.transactionServiceUrl;
-//  const safeService = new SafeApiKit({ txServiceUrl, ethAdapter })
-//  await safeService.proposeTransaction({
-//      safeAddress,
-//      safeTransactionData: safeTransaction.data,
-//      safeTxHash,
-//      senderAddress: (await ethAdapter.getSignerAddress()),
-//      senderSignature: senderSignature.data,
-//  })
-//  console.log(`Transaction sent to the Safe Service: 
-//  ${chainInfo.transactionServiceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
-// }
+  return safeAddress;
+};
 
 exports.createUser = catchAsync(async (req, res, next) => {
-  const { name, tgHandle, userAddr } = req.body;
+  const { name, tgHandle, userAddr, rpcUrl } = req.body;
 
   //create a multisig 1-in-2 for this user , add in database
   // global helper Address, local user Address
-  // const owners = [userAddr, helperAddr];
-  // const threshold = 1;
-  // const safeAddress = await createMultisigWallet(owners, threshold);
+  const owners = [userAddr, helperAddr];
+  const threshold = 1;
+  const safeAddress = await createMultisigWallet(owners, threshold, rpcUrl);
 
   //create user in the database
   const user = await User.create({
     name: name,
     tgHandle: tgHandle,
-    multisigAddress: userAddr, //safeAddress
+    multisigAddress: safeAddress, //safeAddress
   });
 
   if (user) {
@@ -146,8 +109,4 @@ exports.getUser = catchAsync(async (req, res, next) => {
       data: user,
     });
   }
-});
-
-exports.getBalancesOfUser = catchAsync(async (req, res, next) => {
-  const { user, toUser } = req.body;
 });
