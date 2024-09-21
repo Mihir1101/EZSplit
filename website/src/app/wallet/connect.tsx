@@ -57,18 +57,21 @@ export const Connect = () => {
         <div className="App">
             <ToastContainer position="bottom-right" />
             {account && connected ? (
-                <Button
-                    className="font-bold bg-orange text-xl p-5"
+                <button
                     onClick={disconnect}
                     disabled={connecting}
                 >
-                    {account.slice(0, 4) + "...." + account.slice(account.length - 4, account.length)}
-                </Button>
+                    <span className="spark__container">
+                        <span className="spark" />
+                    </span>
+                    <span className="backdrop" />
+                    <span className="text">Connected</span>
+                </button>
             ) : (
                 <Button
                     className={classNames(
                         "font-bold text-xl p-5",
-                        { "bg-gray-400 cursor-not-allowed": isConnecting, "bg-orange": !isConnecting }
+                        { "bg-black cursor-not-allowed": isConnecting, "bg-black": !isConnecting }
                     )}
                     onClick={connect}
                     disabled={connecting || isConnecting}
@@ -78,7 +81,13 @@ export const Connect = () => {
                             <FaSpinner className="animate-spin mr-2" /> Connecting...
                         </span>
                     ) : (
-                        "Connect Wallet"
+                        <>
+                            <span className="spark__container">
+                                <span className="spark" />
+                            </span>
+                            <span className="backdrop" />
+                            <span className="text">Connect Wallet</span>
+                        </>
                     )}
                 </Button>
             )}

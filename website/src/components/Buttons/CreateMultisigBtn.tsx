@@ -2,11 +2,13 @@ import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import { axios } from "../axios/axios";
 import { Input } from "@/components/ui/input";
+import { createSafe, setRpcUrls} from '@instadapp/avocado'
+import { ethers } from 'ethers'
 import Web3 from "web3";
 import { useEffect } from "react";
-import { ethers } from "ethers";
-import { createMultisigWallet } from "@/lib/transactionUtils";
-import { threadId } from "worker_threads";
+import { createMultiSig, ERC20Transfer } from "@/app/wallet/avocado";
+import { toast } from "react-toastify";
+
 export const CreateMultisigBtn: React.FC = () => {
   const [name, setName] = React.useState<string>("");
   const [tgHandle, setTgHandle] = React.useState<string>("");
@@ -21,24 +23,10 @@ export const CreateMultisigBtn: React.FC = () => {
 
   const handleCreateMultisig = async () => {
     try {
-      // Request account access if needed
-      // const ETHProvider = new ethers.providers.Web3Provider(window.ethereum as any);
-      const helperAddr = "0x74bbf4b2223496C4547c44268242A5196E3c6499"; // signer address
-      const accounts = window.ethereum?.request({
-        method: "eth_requestAccounts",
-      });
-      const owners = [helperAddr, accounts[0]];
-      const addr = await createMultisigWallet(owners, (threshold = 1));
-      console.log(addr);
-      // Create a multisig wallet
-      //   console.log("ETHProvider:", ETHProvider);
-      //   const response = await axios.post("/api/user/createUser", {
-      //     name: name,
-      //     tgHandle: tgHandle,
-      //     userAddr: userAddr,
-      //     provider: ETHProvider,
-      //   });
-      console.log("Multisig created:", response.data);
+        const multiSig = await createMultiSig(userAddr);
+        // await ERC20Transfer(multiSig, userAddr, usdc);
+
+        toast.success(`Multisig created successfully. ${multiSig}`);
     } catch (error) {
       console.error("Error creating multisig:", error);
     }

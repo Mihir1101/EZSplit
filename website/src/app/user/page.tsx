@@ -5,6 +5,7 @@ import { Web3 } from 'web3';
 import { TopUpBtn } from '@/components/Buttons/TopUpBtn';
 import { CreateMultisigBtn } from '@/components/Buttons/CreateMultisigBtn';
 import { Connect } from '../wallet/connect';
+import Background from "@/components/Background/Background";
 
 export default function User() {
     const router = useRouter();
@@ -57,6 +58,7 @@ export default function User() {
 
     return (
         <>
+        <Background />
             <div className="min-h-screen flex items-center justify-start bg-black-100 flex-col">
                 <Connect />
                 <div>
