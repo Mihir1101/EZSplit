@@ -14,14 +14,16 @@
     "@radix-ui/react-slot": "^1.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "ethers": "^6.13.2",
     "lucide-react": "^0.441.0",
     "next": "14.2.13",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
-    "web3": "^4.13.0"
+    "web3": "^4.13.0",
+    "ethers": "5.7.2",
+    "@safe-global/protocol-kit": "^0.1.1",
+    "@safe-global/api-kit": "^1.0.1"
   },
   "devDependencies": {
     "@types/dom-screen-wake-lock": "^1.0.3",

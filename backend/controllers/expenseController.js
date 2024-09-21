@@ -3,7 +3,7 @@ const AppError = require("./../utils/appError");
 const Expense = require("./../models/expenseModel");
 const Group = require("../models/groupModel");
 const User = require("../models/userModel");
-const {getEthAdapter}=require("./")
+// const {getEthAdapter}=require("./")
 exports.addExpense = catchAsync(async (req, res, next) => {
   const { addedByhandle, fromUserhandle, toUserhandle, amt, grpName } =
     req.body;
@@ -58,7 +58,7 @@ exports.addExpense = catchAsync(async (req, res, next) => {
     }
   } else if (ex2) {
     let prevAmt = ex2.amount;
-    let updatedAmt = prevAmt - amount;
+    let updatekdAmt = prevAmt - amount;
     const updatedData = {
       addedBy,
       toUser, //B

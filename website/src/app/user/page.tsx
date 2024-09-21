@@ -1,17 +1,16 @@
 "use client";
-import { Connect } from '../wallet/connect';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Web3 } from 'web3';
+import { TopUpBtn } from '@/components/Buttons/TopUpBtn';
+import { CreateMultisigBtn } from '@/components/Buttons/CreateMultisigBtn';
+import { Connect } from '../wallet/connect';
 
 export default function User() {
     const router = useRouter();
     const [multisig, setMultisig] = useState<string>("");
     const [account, setAccount] = useState<string>();
     const [balance, setBalance] = useState<string>();
-    const [amount, setAmount] = useState<number>();
 
     const fetchBalance = async (account: string) => {
         const web3 = new Web3(window.ethereum);
@@ -42,7 +41,7 @@ export default function User() {
             const selectedAccount = window.ethereum?.selectedAddress;
             setAccount(selectedAccount);
             fetchBalance(selectedAccount);  // Fetch user's balance
-            setMultisig("0xYourMultisigWalletAddress");  // Example multisig address
+            // get multisig from database
         }
 
         // Listen for account and network changes
@@ -56,58 +55,21 @@ export default function User() {
         };
     }, []);
 
-    const handleTopUp = async () => {
-        try {
-            // Request account access if needed
-            await window.ethereum?.request({ method: "eth_requestAccounts" });
-
-            // Initialize web3
-            const web3 = new Web3(window.ethereum);
-
-            // Get current account
-            const accounts = await web3.eth.getAccounts();
-            const sender = accounts[0];
-
-            // Create a transaction object
-            const transactionParameters = {
-                to: multisig,  // Multisig wallet address
-                from: sender,  // Sender's account
-                value: web3.utils.toWei({amount}.toString(), 'ether'),  // Amount in ETH
-            };
-
-            // Send transaction
-            const txHash = await web3.eth.sendTransaction(transactionParameters);
-            console.log("Transaction sent, hash:", txHash);
-        } catch (error) {
-            console.error("Error sending transaction:", error);
-        }
-    }
-
     return (
         <>
-            <div className="min-h-screen flex items-center justify-center bg-black-100">
-                <div>Dashboard</div>
+            <div className="min-h-screen flex items-center justify-start bg-black-100 flex-col">
                 <Connect />
                 <div>
-                        <p>Account: {account}</p>
-                        <p>Balance: {balance} ETH</p>
-                </div>
-                <div>
-                    {!multisig ? (
-                        <div>
-                            <div>{multisig}</div>
-                            <Input type="number" placeholder="Amount" onChange={(e) => setAmount(Number(e.target.value))} />
-                            <Button
-                                className='bg-blue-500'
-                                onClick={handleTopUp}
-                            >
-                                Top up your account
-                            </Button>
-                        </div>
+                    {multisig ? (
+                        <>
+                            <div>
+                                <p>Account: {account}</p>
+                                <p>Balance: {balance} ETH</p>
+                            </div>
+                            <TopUpBtn multisig={multisig} />
+                        </>
                     ) : (
-                        <div>
-                            <div>No multisig found. Create one</div>
-                        </div>
+                        <CreateMultisigBtn />
                     )}
                 </div>
             </div>

@@ -47,5 +47,24 @@ exports.getGroup = catchAsync(async (req, res, next) => {
 });
 
 exports.updateGroup = catchAsync(async (req, res, next) => {
-  const { user } = req.body;
+  const grpName = req.params.grpName;
+  const { userTgHandle } = req.body;
+
+  const grp = await Group.findOne({ name: grpName });
+  const user = await User.findOne({ tgHandle: userTgHandle });
+
+  let users = grp.users;
+  users.push(user._id);
+
+  let grpUpdated = await Group.findByIdAndUpdate(grp._id, {
+    users,
+  });
+  if (grpUpdated) {
+    res.status(200).json({
+      message: "success",
+      data: grpUpdated,
+    });
+  } else {
+    return next(new AppError("group not updated", 404));
+  }
 });

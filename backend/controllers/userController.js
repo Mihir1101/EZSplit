@@ -21,9 +21,9 @@ const helperAddr = "0x74bbf4b2223496C4547c44268242A5196E3c6499"; // signer addre
 //   signer,
 // }).then(() => console.log("safe address initiated"));
 
-exports.getEthAdapter = async (rpcUrl) => {
+exports.getEthAdapter = async (provider) => {
   // Using ethers
-  const provider = new ethers.providers.Web3Provider(rpcUrl);
+  // const provider = new ethers.providers.Web3Provider(rpcUrl);
   signer = provider.getSigner();
 
   // console.log({ provider, signer });
@@ -40,11 +40,11 @@ exports.getEthAdapter = async (rpcUrl) => {
 const createMultisigWallet = async (
   owners, //Array<string>,
   threshold, // number
-  rpcUrl
+  provider
 ) => {
   console.log({ owners, threshold });
 
-  const ethAdapter = await getEthAdapter(rpcUrl);
+  const ethAdapter = await getEthAdapter(provider);
   const chainId = await ethAdapter.getChainId();
   const chainInfo = CHAIN_INFO[chainId.toString()];
   const safeFactory = await SafeFactory.create({ ethAdapter });
@@ -73,13 +73,13 @@ const createMultisigWallet = async (
 };
 
 exports.createUser = catchAsync(async (req, res, next) => {
-  const { name, tgHandle, userAddr, rpcUrl } = req.body;
+  const { name, tgHandle, userAddr, provider } = req.body;
 
   //create a multisig 1-in-2 for this user , add in database
   // global helper Address, local user Address
   const owners = [userAddr, helperAddr];
   const threshold = 1;
-  const safeAddress = await createMultisigWallet(owners, threshold, rpcUrl);
+  const safeAddress = await createMultisigWallet(owners, threshold, provider);
 
   //create user in the database
   const user = await User.create({
