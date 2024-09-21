@@ -225,7 +225,7 @@ exports.getExpensesForGroup = catchAsync(async (req, res, next) => {
 
 exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   const { grpName, tgHandle } = req.params;
-  const userId = await User.findOne({ tgHandle })._id;
+  const userId = (await User.findOne({ tgHandle }))._id;
   const expensesOfGroupAndUser = await Expense.findOne({
     name: grpName,
     toUser: userId,
