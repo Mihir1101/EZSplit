@@ -173,11 +173,16 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
         } else if (updatedAmt == 0) {
           //remove the expense
           const deleted = await Expense.deleteOne({ _id: ex2._id });
+          const exps = await Expense.find({ inGroup: inGroup });
+          const updatedgrps = { expenses: exps };
+          await Group.findByIdAndUpdate(inGroup, updatedgrps);
         } else {
           const deleted = await Expense.deleteOne({ _id: ex2._id });
+          const exps = await Expense.find({ inGroup: inGroup });
+          const updatedgrps = { expenses: exps };
+          await Group.findByIdAndUpdate(inGroup, updatedgrps);
 
           updatedAmt = -1 * updatedAmt;
-          const group = await Group.findById(inGroup);
           const expense = await Expense.create({
             addedBy,
             fromUser,
@@ -185,13 +190,13 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
             amount: updatedAmt,
             inGroup,
           });
-          // const updatedExpenses = group.expenses;
-          // updatedExpenses.push(expense);
-          // const updatedGroup = {
-          //   expenses: updatedExpenses,
-          // };
+          const updatedExpenses = group.expenses;
+          updatedExpenses.push(expense);
+          const updatedGroup = {
+            expenses: updatedExpenses,
+          };
 
-          // const newGroup = await Group.findByIdAndUpdate(inGroup, updatedGroup);
+          const newGroup = await Group.findByIdAndUpdate(inGroup, updatedGroup);
         }
       } else {
         const updatedAmt = amount / n;
