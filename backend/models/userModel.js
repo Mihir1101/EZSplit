@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
     tgHandle: {
       type: String,
       unique: true,
-      required: [true, "Please give your wallet address"],
+      required: [true, "Please give your teleggram handle"],
     },
     accountAddr: {
       type: String,
@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
     multisigAddress: {
       type: String,
       unique: true,
-      required: [true, "Please give your wallet address"],
+      // required: [true, "Please give your wallet address"],
       validate: [isAddress, "Please provide a valid wallet address"],
     },
     ////

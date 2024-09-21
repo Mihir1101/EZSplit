@@ -36,3 +36,16 @@ exports.getUser = catchAsync(async (req, res, next) => {
     });
   }
 });
+
+exports.getUser2 = catchAsync(async (req, res, next) => {
+  const { accountAddr } = req.params;
+  const user = await User.findOne({ accountAddr: accountAddr });
+  if (!user) {
+    return new AppError("user is not created  yet", 404);
+  } else {
+    res.status(200).json({
+      status: "success",
+      data: user,
+    });
+  }
+});
