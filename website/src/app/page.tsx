@@ -1,8 +1,7 @@
 "use client";
-import Landing from "./landing";
+import HomeComponent from "./home";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Connect } from "./wallet/connect";
 
 export default function Home() {
   const router = useRouter();
@@ -12,9 +11,12 @@ export default function Home() {
       router.push("/user");
     }
   }, []);
+
   return (
     <>
-      <Landing />
+    <div className="absolute inset-0 -z-10 h-full w-full [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#ff8000_100%)]">
+      <HomeComponent />
+    </div>
     </>
   );
 }
