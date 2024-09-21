@@ -224,49 +224,65 @@ exports.getExpensesForGroup = catchAsync(async (req, res, next) => {
 
 exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   const { grpName, tgHandle } = req.params;
-  //console.log(grpName, tgHandle);
+  // console.log(grpName, tgHandle);
+  const grp = await Group.findOne({ name: grpName });
   const user = await User.findOne({ tgHandle: tgHandle });
-  const group = await Group.findOne({ name: grpName });
-  //console.log(user);
+  // console.log(user);
   const expensesOfGroupAndUser = await Expense.find({
-    inGroup: group._id,
+    inGroup: grp._id,
     toUser: user._id,
   });
-  //console.log(expensesOfGroupAndUser);
-  let final_expenses = [];
 
+  console.log(expensesOfGroupAndUser);
+
+  let final_expenses = [];
   let owe = true;
-  if (expensesOfGroupAndUser.length > 0) {
-    expensesOfGroupAndUser.forEach(async (expenses) => {
-      let fromUser = await User.findById(expenses.fromUser);
-      const [name, tgHandle, amount] = [
-        fromUser.name,
-        fromUser.tgHandle,
-        expenses.amount,
-      ];
+
+  if (expensesOfGroupAndUser) {
+    const promises = expensesOfGroupAndUser.map(async (expenses) => {
+      // Wait for the user to be fetched
+      const fromUser = await User.findById(expenses.fromUser);
+
+      // Extract the necessary fields
+      const { name, tgHandle } = fromUser;
+      const amount = expenses.amount;
+
+      // Push to the final_expenses array
       final_expenses.push({ name, tgHandle, amount, owe });
     });
+
+    // Wait for all promises to resolve
+    await Promise.all(promises);
   }
 
-  owe = false;
+  // Now it's safe to log final_expenses
+  console.log(final_expenses);
+
   const expensesOfGroupAndUser2 = await Expense.find({
-    inGroup: group._id,
+    inGroup: grp._id,
     fromUser: user._id,
   });
-  console.log(expensesOfGroupAndUser2.length);
-  if (expensesOfGroupAndUser2.length > 0) {
-    expensesOfGroupAndUser2.forEach(async (expenses) => {
-      let toUser = await User.findById(expenses.toUser);
-      const [name, tgHandle, amount] = [
-        toUser.name,
-        toUser.tgHandle,
-        expenses.amount,
-      ];
-      console.log(name, amount);
+  console.log(expensesOfGroupAndUser2);
+
+  if (expensesOfGroupAndUser2) {
+    const promises = expensesOfGroupAndUser2.map(async (expenses) => {
+      // Wait for the user to be fetched
+      const toUser = await User.findById(expenses.toUser);
+
+      // Extract the necessary fields
+      const { name, tgHandle } = toUser;
+      const amount = expenses.amount;
+
+      // Push to the final_expenses array
       final_expenses.push({ name, tgHandle, amount, owe });
     });
-    console.log(final_expenses);
+
+    // Wait for all promises to resolve
+    await Promise.all(promises);
   }
+
+  console.log(final_expenses);
+
   res.status(200).json({
     message: "success",
     data: final_expenses,
