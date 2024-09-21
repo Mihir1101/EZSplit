@@ -236,7 +236,7 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   console.log(expensesOfGroupAndUser);
 
   let final_expenses = [];
-  let owe = true;
+  let owe = false;
 
   if (expensesOfGroupAndUser) {
     const promises = expensesOfGroupAndUser.map(async (expenses) => {
@@ -265,6 +265,7 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   console.log(expensesOfGroupAndUser2);
 
   if (expensesOfGroupAndUser2) {
+    owe = true;
     const promises = expensesOfGroupAndUser2.map(async (expenses) => {
       // Wait for the user to be fetched
       const toUser = await User.findById(expenses.toUser);

@@ -4,19 +4,45 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Call
 from telegram.error import TelegramError
 import asyncio
 
-# async def get_balance(update: Update, context: CallbackContext):
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    help_text = """
+    🛠️ Here are the commands you can use:
+    
+    /start - start the bot
+    /group - create the expense group [admin-only command]
+    /help - Show this help message
+    /hello - join the expense group
+    /members - Get details about the members that have joined the group
+    /add - Add an expense from one user to another
+    /addAll - Add an expense from one user to all users
+    /walletBalance - Get your multisig wallet balance
+    /myBalance - Get your pending expense balances
+    /settle - Settle your pending expenses
+    
+    Feel free to reach out if you need further assistance!
+    """
+    await update.message.reply_text(help_text)
+
+async def get_balance(update: Update, context: CallbackContext):
+    tgHandle = update.effective_user.username
+    url = f'http://localhost:5000/api/user/getBalance/{tgHandle}'
+    get_res = requests.get(url)
+    data1=get_res.json()
+    print(data1)
+    bal=data1["data"]
+    await update.message.reply_text(f"Hey {update.effective_user.first_name}! Your multisig wallet balance is ${bal}.")
+        
 
 async def get_user_balance(update: Update, context: CallbackContext):
     username = update.effective_user.username
     grpname= update.effective_chat.title
     url = f'http://localhost:5000/api/expenses/get/{grpname}/{username}'
-    #params = {"grpName":grpname,"tgHandle": username}
     try:
         get_res=requests.get(url)
         data1=get_res.json()
         data=data1["data"]
         if (len(data) == 0):
-            text = "No expenses yet!"
+            text = "Yay! You have no pending balances."
         else:
             text="You owe\n"
             for obj in data:
@@ -67,10 +93,6 @@ async def members_info(update: Update, context: CallbackContext):
 
         print(text)
         await update.message.reply_text(text)
-        # for data_val in data:
-        #     handle = data_val["tgHandle"]
-        #     name = data_val["name"]
-        #     await update.message.reply_text(f"{name} [{handle}]")
     except requests.exceptions.RequestException as e:
         print('Error:', e)
         return None
@@ -85,9 +107,9 @@ async def make_group(update: Update, context: CallbackContext) -> None:
         obj = {"grpName":grpName, "user":adminHandle}
         post_res = requests.post(url, json = obj)
         if (post_res.status_code == 200):
-            await update.message.reply_text("Group created!")
+            await update.message.reply_text("Group created! Now you can add other members to this group.")
         else:
-            await update.message.reply_text("Failed to create group!")            
+            await update.message.reply_text("Failed to create group! Please try again or contact support.")            
             
     except TelegramError as e:
         update.message.reply_text(f'Error: {e}')
@@ -102,9 +124,9 @@ async def join_group(update: Update, context: CallbackContext):
         obj = {"user":userhandle,"grpName":grpName}
         patch_res = requests.patch(url, json = obj)
         if (patch_res.status_code == 200):
-            await update.message.reply_text("user added to group!")
+            await update.message.reply_text("You are now added to the group! You can add and manage your expenses.")
         else:
-            await update.message.reply_text("Failed to add user!")            
+            await update.message.reply_text("Failed to add user! Please try again or contact support.")            
             
     except TelegramError as e:
         update.message.reply_text(f'Error: {e}')
@@ -123,11 +145,11 @@ async def add_all(update: Update, context: CallbackContext):
         obj = {"addedByhandle": added_by,"fromUserhandle": from_user,"amt": amt,"grpName": group_name}
         post_res = requests.post(url, json = obj)
         if (post_res.status_code == 200):
-            await update.message.reply_text("Added expense!")
+            await update.message.reply_text("Expense added to the group!")
         else:
-            await update.message.reply_text("error adding expense!")
+            await update.message.reply_text("Oops! Error adding the expense. Please try again or contact the administrator")
     else:
-        await update.message.reply_text("expected params not specified")
+        await update.message.reply_text("Please provide the expense details. Try the /help command for the exact format.")
 
 async def add_expense(update: Update, context: CallbackContext):
     # "from" lends "amt" to "to"
@@ -146,11 +168,11 @@ async def add_expense(update: Update, context: CallbackContext):
         obj = {"addedByhandle" :added_by, "fromUserhandle" :from_user, "toUserhandle" :to_user, "amt" :amt, "grpName":group_name}
         post_res = requests.post(url, json = obj)
         if (post_res.status_code == 200):
-            await update.message.reply_text("Added expense!")
+            await update.message.reply_text("Expense added to the group!")
         else:
-            await update.message.reply_text("error adding expense!")
+            await update.message.reply_text("Oops! Error adding the expense. Please try again or contact the administrator")
     else:
-        await update.message.reply_text("expected params not specified")
+        await update.message.reply_text("Please provide the expense details. Try the /help command for the exact format.")
 
 async def welcome_new_members(update: Update, context: CallbackContext):
     for new_member in update.message.new_chat_members:
@@ -163,7 +185,8 @@ async def welcome_new_members(update: Update, context: CallbackContext):
         # Create a welcome message with a button that redirects to bot's DM
         welcome_message = (
             f"Hello, {new_member.first_name}! Welcome to the group.\n"
-            "Please click the button below to send me a direct message and get started!"
+            "Please click the button below to send me a direct message and get started!\n"
+            "Type /help to have a look at all the commands you can use."
         )
 
         # Inline keyboard button that opens a DM with the bot
@@ -184,9 +207,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
         if (get_res.status_code == 200):
             user_final = get_res.json
             addr = user_final["multisigAddress"]
-            await update.message.reply_text(f"Your multisig address is: {addr}")
+            await update.message.reply_text(f"You have already created your multisig wallet with us. Your multisig wallet address is: {addr}")
         else:
-            await update.message.reply_text(f"Your multisig is not yet created! please create it on our application.")
+            await update.message.reply_text(f"Your multisig wallet is not yet created! Please create it on our application website.")
         
     except requests.exceptions.RequestException as e:
         print('Error:', e)
@@ -194,7 +217,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
     
 async def settle(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
     userhandle = update.effective_user.username
-    await update.message.reply_text(f"hey! {userhandle}, you can choose any exxpense to settle.")
+    await update.message.reply_text(f"hey! {update.effective_user.first_name}, you can choose any expense to settle.")
     grpname = update.effective_chat.title
     
     url = f'http://localhost:5000/api/expenses/get/{grpname}/{userhandle}'
@@ -231,11 +254,11 @@ async def settle(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
 async def button_callback(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()  # Acknowledge the query
-    await query.edit_message_text(f"You selected: {query.data}")
     userhandle = query.from_user.username
     amt_to = query.data.split(',')
     amount = amt_to[1]
     to = amt_to[0]
+    await query.edit_message_text(f"You selected: {amount} to {to}")
     url = 'http://localhost:5000/api/expenses/settle'
     
     obj = {"from" : userhandle, "to" : to, "amount" : amount}
@@ -248,10 +271,11 @@ def main():
     application.add_handler(CommandHandler('add', add_expense))
     application.add_handler(CommandHandler('addAll', add_all))
     application.add_handler(CommandHandler('group', make_group))
-    application.add_handler(CommandHandler('join', join_group))
+    application.add_handler(CommandHandler('hello', join_group))
     application.add_handler(CommandHandler('members', members_info))
     application.add_handler(CommandHandler('myBalance', get_user_balance))
-    application.add_handler(CommandHandler('settle', settle))
+    application.add_handler(CommandHandler('walletBalance', get_balance))
+    application.add_handler(CommandHandler('help', help_command))
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     application.add_handler(CallbackQueryHandler(button_callback))
     application.run_polling()

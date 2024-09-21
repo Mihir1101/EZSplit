@@ -51,14 +51,16 @@ exports.getUser2 = catchAsync(async (req, res, next) => {
 });
 
 exports.getUserBalance = catchAsync(async (req, res, next) => {
-  const { tgHandle } = req.params;
+  const tgHandle = req.params.tgHandle;
   const user = await User.findOne({ tgHandle: tgHandle });
   if (!user) {
     return new AppError("user is not created  yet", 404);
   } else {
+    const bal = user.balance;
+    console.log(bal);
     res.status(200).json({
       status: "success",
-      data: user.balance,
+      data: bal,
     });
   }
 });
