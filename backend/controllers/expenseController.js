@@ -107,16 +107,16 @@ exports.addExpense = catchAsync(async (req, res, next) => {
 
 exports.addExpenseAll = catchAsync(async (req, res, next) => {
   //error handling for null condition
-  const { addedByhandle, fromUserhandle, amount, grpName } = req.body;
+  const { addedByhandle, fromUserhandle, amt, grpName } = req.body;
   const addedBy = (await User.findOne({ tgHandle: addedByhandle }))._id;
   const fromUser = (await User.findOne({ tgHandle: fromUserhandle }))._id;
   const inGroup = (await Group.findOne({ name: grpName }))._id;
-
+  const amount = Number(amt);
   const grp = await Group.findById(inGroup);
   const toUsers = grp.users;
   const n = grp.users.length;
 
-  for (let user in toUsers) {
+  for (const user of toUsers) {
     if (user != fromUser) {
       const ex = await Expense.find({
         fromUser: fromUser,
@@ -143,24 +143,25 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
           new: true, // Returns the updated document
           runValidators: true, // Enforces schema validation
         });
-
-        expenses.push(exUpdated);
       } else if (ex2) {
         let prevAmt = ex2.amount;
         let updatedAmt = prevAmt - amount;
-        
-        const updatedData = {
-          addedBy,
-          user, //B
-          fromUser, //A
-          amount: updatedAmt,
-          inGroup,
-        };
-
-        let exUpdated = await Expense.findByIdAndUpdate(ex._id, updatedData, {
-          new: true, // Returns the updated document
-          runValidators: true, // Enforces schema validation
-        });
+        if (updatedAmt > 0) {
+          const updatedData = {
+            addedBy,
+            user, //B
+            fromUser, //A
+            amount: updatedAmt,
+            inGroup,
+          };
+          let exUpdated = await Expense.findByIdAndUpdate(ex._id, updatedData, {
+            new: true, // Returns the updated document
+            runValidators: true, // Enforces schema validation
+          });
+        } else {
+          //remove the expense
+          const deleted = await Expense.deleteOne({ _id: ex2._id });
+        }
       } else {
         const group = await Group.findById(inGroup);
         const expense = await Expense.create({

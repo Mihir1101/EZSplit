@@ -41,8 +41,8 @@ async def add_all(update: Update, context: CallbackContext):
         from_user = from_user[1:]
         amt = (context.args[2])
         group_name = update.effective_chat.title
-        
-        obj = {"addedByhandle": added_by,"fromUserhandle": from_user,"amount": amt,"grpName": group_name}
+        #print(from_user, group_name, amt)
+        obj = {"addedByhandle": added_by,"fromUserhandle": from_user,"amt": amt,"grpName": group_name}
         post_res = requests.post(url, json = obj)
         if (post_res.status_code == 200):
             await update.message.reply_text("Added expense!")
