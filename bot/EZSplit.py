@@ -4,23 +4,23 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Call
 from telegram.error import TelegramError
 import asyncio
 
-groups = {}
-current_grp = []
-
 # async def get_balance(update: Update, context: CallbackContext):
 
+# async def get_balance(update: Update, context: CallbackContext):
+#     url = 'http://localhost:5000/api/expenses/get'
+#     username = update.effective_user.username
+#     grpname= update.effective_chat.title
+#     params = {"grpName":grpname,"tgHandle": username}
+#     try:
+    
+
 async def make_group(update: Update, context: CallbackContext) -> None:
-    global groups 
-    global current_grp
+    #called by admin
+    adminHandle = update.effective_user.username
     grpName = update.effective_chat.title
-    chat_id = update.effective_chat.id
-    admin = (await context.bot.get_chat_administrators(chat_id))[1]
-    current_grp += [admin.user.username]
-    groups[grpName] = current_grp
     
     try:
         url = 'http://localhost:5000/api/group/createGroup'
-        obj = {"grpName":grpName, "users":current_grp}
         post_res = requests.post(url, json = obj)
         if (post_res.status_code == 200):
             await update.message.reply_text("Added group!")
