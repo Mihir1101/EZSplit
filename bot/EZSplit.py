@@ -12,7 +12,18 @@ import asyncio
 #     grpname= update.effective_chat.title
 #     params = {"grpName":grpname,"tgHandle": username}
 #     try:
+
+async def members_info(update: Update, context: CallbackContext):
+    url = 'http://localhost:5000/api/group/getGroup'
+    grpName = update.effective_chat.title
+    params = {"grpName":grpName}
     
+    get_res = await requests.get(url, params=params)
+    data = get_res.json()
+    for data_val in data:
+        handle = data_val["tgHandle"]
+        name = data_val["name"]
+        await update.message.reply_text(f"{name} ({handle})")
 
 async def make_group(update: Update, context: CallbackContext) -> None:
     #called by admin
@@ -21,15 +32,32 @@ async def make_group(update: Update, context: CallbackContext) -> None:
     
     try:
         url = 'http://localhost:5000/api/group/createGroup'
+        obj = {"grpName":grpName, "user":adminHandle}
         post_res = requests.post(url, json = obj)
         if (post_res.status_code == 200):
-            await update.message.reply_text("Added group!")
+            await update.message.reply_text("Group created!")
         else:
-            await update.message.reply_text("Failed to add group!")            
+            await update.message.reply_text("Failed to create group!")            
             
     except TelegramError as e:
         update.message.reply_text(f'Error: {e}')
     
+async def join_group(update: Update, context: CallbackContext):
+    # called by users individually 
+    userhandle = update.effective_user.username
+    grpName = update.effective_chat.title
+    try:
+        url = 'http://localhost:5000/api/group/updateGroup'
+        params = {"grpName":grpName}
+        obj = {"user":userhandle}
+        patch_res = requests.patch(url, params=params, json = obj)
+        if (patch_res.status_code == 200):
+            await update.message.reply_text("user added to group!")
+        else:
+            await update.message.reply_text("Failed to add user!")            
+            
+    except TelegramError as e:
+        update.message.reply_text(f'Error: {e}')
 
 async def add_all(update: Update, context: CallbackContext):
     # "from" paid "amt" for all
@@ -78,9 +106,6 @@ async def welcome_new_members(update: Update, context: CallbackContext):
     for new_member in update.message.new_chat_members:
         bot_username = context.bot.username
         grpName = update.effective_chat.title
-        #store new_member handle somewhere along with the group name, can store in 2d list in python script only 
-        current_grp+=[new_member.username]
-        groups[grpName] = current_grp
         
         # Direct message link to the bot
         dm_link = f"https://t.me/{bot_username}"
@@ -137,6 +162,8 @@ def main():
     application.add_handler(CommandHandler('add', add_expense))
     application.add_handler(CommandHandler('addAll', add_all))
     application.add_handler(CommandHandler('group', make_group))
+    application.add_handler(CommandHandler('join', join_group))
+    application.add_handler(CommandHandler('members', members_info))
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     application.add_handler(CallbackQueryHandler(button_call_2))
     application.run_polling()

@@ -4,24 +4,15 @@ const Group = require("./../models/groupModel");
 const User = require("./../models/userModel");
 
 exports.createGroup = catchAsync(async (req, res, next) => {
-  const { grpName, users } = req.body;
-  const final_users = [];
-
-  for (const userName of users) {
-    const user = await User.findOne({ tgHandle: userName });
-    if (user) {
-      const user_id = user._id;
-      //console.log(user_id, user.name);
-      final_users.push(user_id);
-    }
-  }
+  const { grpName, user } = req.body;
+  user = (await User.findOne({ tgHandle: user }))._id;
   const grp = await Group.create({
     name: grpName,
-    users: final_users,
+    users: [user],
   });
 
   if (grp) {
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       data: grp,
     });
@@ -37,21 +28,21 @@ exports.getGroup = catchAsync(async (req, res, next) => {
     "expenses"
   );
   if (!grp) {
-    return next(new AppError("user is not created  yet", 404));
+    return next(new AppError("user is not created yet", 404));
   }
 
-  res.status(200).json({
+  return res.status(200).json({
     status: "success",
     data: grp,
   });
 });
 
 exports.updateGroup = catchAsync(async (req, res, next) => {
+  const { user } = req.body;
   const grpName = req.params.grpName;
-  const { userTgHandle } = req.body;
 
   const grp = await Group.findOne({ name: grpName });
-  const user = await User.findOne({ tgHandle: userTgHandle });
+  user = await User.findOne({ tgHandle: user });
 
   let users = grp.users;
   users.push(user._id);
@@ -60,7 +51,7 @@ exports.updateGroup = catchAsync(async (req, res, next) => {
     users,
   });
   if (grpUpdated) {
-    res.status(200).json({
+    return res.status(200).json({
       message: "success",
       data: grpUpdated,
     });
