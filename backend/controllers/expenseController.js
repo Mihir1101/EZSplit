@@ -114,27 +114,32 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
   const amount = Number(amt);
   const grp = await Group.findById(inGroup);
   const toUsers = grp.users;
-  const n = grp.users.length;
+  const n = toUsers.length;
 
   for (const user of toUsers) {
-    if (user != fromUser) {
-      const ex = await Expense.find({
+    const userhandle = (await User.findById(user)).tgHandle;
+    const fromhandle = (await User.findById(fromUser)).tgHandle;
+
+    if (userhandle != fromhandle) {
+      console.log(user, fromUser);
+      const ex = await Expense.findOne({
         fromUser: fromUser,
         toUser: user,
         inGroup: inGroup,
       });
-      const ex2 = await Expense.find({
+      const ex2 = await Expense.findOne({
         fromUser: user,
         toUser: fromUser,
         inGroup: inGroup,
       });
       if (ex) {
         let prevAmt = ex.amount;
+        //console.log(prevAmt, amount);
         let updatedAmt = prevAmt + amount / n;
         const updatedData = {
           addedBy,
           fromUser,
-          user,
+          toUser: user,
           amount: updatedAmt,
           inGroup,
         };
@@ -145,45 +150,70 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
         });
       } else if (ex2) {
         let prevAmt = ex2.amount;
-        let updatedAmt = prevAmt - amount;
+        //console.log(amount, prevAmt);
+
+        let updatedAmt = prevAmt - amount / n;
+        console.log(updatedAmt);
         if (updatedAmt > 0) {
           const updatedData = {
             addedBy,
-            user, //B
+            toUser: user, //B
             fromUser, //A
             amount: updatedAmt,
             inGroup,
           };
-          let exUpdated = await Expense.findByIdAndUpdate(ex._id, updatedData, {
-            new: true, // Returns the updated document
-            runValidators: true, // Enforces schema validation
-          });
-        } else {
+          let exUpdated = await Expense.findByIdAndUpdate(
+            ex2._id,
+            updatedData,
+            {
+              new: true, // Returns the updated document
+              runValidators: true, // Enforces schema validation
+            }
+          );
+        } else if (updatedAmt == 0) {
           //remove the expense
           const deleted = await Expense.deleteOne({ _id: ex2._id });
+        } else {
+          const deleted = await Expense.deleteOne({ _id: ex2._id });
+
+          updatedAmt = -1 * updatedAmt;
+          const group = await Group.findById(inGroup);
+          const expense = await Expense.create({
+            addedBy,
+            fromUser,
+            toUser: user,
+            amount: updatedAmt,
+            inGroup,
+          });
+          // const updatedExpenses = group.expenses;
+          // updatedExpenses.push(expense);
+          // const updatedGroup = {
+          //   expenses: updatedExpenses,
+          // };
+
+          // const newGroup = await Group.findByIdAndUpdate(inGroup, updatedGroup);
         }
       } else {
+        const updatedAmt = amount / n;
         const group = await Group.findById(inGroup);
         const expense = await Expense.create({
           addedBy,
           fromUser,
           toUser: user,
-          amount,
+          amount: updatedAmt,
           inGroup,
         });
-        if (not(expense)) {
-          return next(new AppError("expense not created!", 404));
-        }
         const updatedExpenses = group.expenses;
         updatedExpenses.push(expense);
         const updatedGroup = {
           expenses: updatedExpenses,
         };
 
-        const newGroup = await Group.findByIdAndUpdate(group._id, updatedGroup);
+        const newGroup = await Group.findByIdAndUpdate(inGroup, updatedGroup);
       }
     }
   }
+  const expenses = [];
 
   return res.status(200).json({
     status: "success",
