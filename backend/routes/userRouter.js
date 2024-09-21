@@ -12,6 +12,6 @@ router.route("/createUser").post(createUser);
 router.route("/ui/:accountAddr").get(getUser2);
 router.route("/getUser/:tgHandle").get(getUser);
 router.route("/getBalance/:tgHandle").get(getUserBalance);
-router.route("/updateBalance/:accountAddr").patch(updateUserBalance);
+router.route("/updateBalance").patch(updateUserBalance);
 
 module.exports = router;
