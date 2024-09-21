@@ -12,26 +12,32 @@ import asyncio
 #     grpname= update.effective_chat.title
 #     params = {"grpName":grpname,"tgHandle": username}
 #     try:
+        
 
 async def members_info(update: Update, context: CallbackContext):
-    url = 'http://localhost:5000/api/group/getGroup'
-    grpName = update.effective_chat.title
-    params = {"grpName":grpName}
+    url = "http://localhost:5000/api/group/getGroup"
+    grpname = update.effective_chat.title
+    params = {"grpName":grpname}
     
-    get_res = await requests.get(url, params=params)
-    data = get_res.json()
-    for data_val in data:
-        handle = data_val["tgHandle"]
-        name = data_val["name"]
-        await update.message.reply_text(f"{name} ({handle})")
-
+    try:
+        get_res = requests.get(url, params=params)
+        data = get_res.json
+        print(data)
+        # for data_val in data:
+        #     handle = data_val["tgHandle"]
+        #     name = data_val["name"]
+        #     await update.message.reply_text(f"{name} [{handle}]")
+    except requests.exceptions.RequestException as e:
+        print('Error:', e)
+        return None
+        
 async def make_group(update: Update, context: CallbackContext) -> None:
     #called by admin
     adminHandle = update.effective_user.username
     grpName = update.effective_chat.title
     
     try:
-        url = 'http://localhost:5000/api/group/createGroup'
+        url = 'http://localhost:5000/api/group/create'
         obj = {"grpName":grpName, "user":adminHandle}
         post_res = requests.post(url, json = obj)
         if (post_res.status_code == 200):
@@ -48,9 +54,9 @@ async def join_group(update: Update, context: CallbackContext):
     grpName = update.effective_chat.title
     try:
         url = 'http://localhost:5000/api/group/updateGroup'
-        params = {"grpName":grpName}
-        obj = {"user":userhandle}
-        patch_res = requests.patch(url, params=params, json = obj)
+        # params = {"grpName":grpName}
+        obj = {"user":userhandle,"grpName":grpName}
+        patch_res = requests.patch(url, json = obj)
         if (patch_res.status_code == 200):
             await update.message.reply_text("user added to group!")
         else:

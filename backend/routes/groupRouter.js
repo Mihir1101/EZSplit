@@ -6,8 +6,8 @@ const {
 const express = require("express");
 const router = express.Router();
 
-router.route("/getGroup/:grpName").get(getGroup);
 router.route("/createGroup").post(createGroup);
-router.route("/updateGroup/:grpName").patch(updateGroup); // send user tgHandle to add in the group
+router.route("/updateGroup").patch(updateGroup); // send user tgHandle to add in the group
+router.route("/getGroup/:grpName").get(getGroup);
 
 module.exports = router;

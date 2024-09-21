@@ -46,8 +46,7 @@ app.use("/api/expenses", expenseRouter);
 
 //handle other urls
 app.all("*", (req, res, next) => {
-  next();
-  return res.status(500).json({
+  res.status(500).json({
     message: "not handled on backend",
   });
 });

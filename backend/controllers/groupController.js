@@ -5,10 +5,10 @@ const User = require("./../models/userModel");
 
 exports.createGroup = catchAsync(async (req, res, next) => {
   const { grpName, user } = req.body;
-  user = (await User.findOne({ tgHandle: user }))._id;
+  const userId = (await User.findOne({ tgHandle: user }))._id;
   const grp = await Group.create({
     name: grpName,
-    users: [user],
+    users: [userId],
   });
 
   if (grp) {
@@ -31,21 +31,20 @@ exports.getGroup = catchAsync(async (req, res, next) => {
     return next(new AppError("user is not created yet", 404));
   }
 
-  return res.status(200).json({
+  res.status(200).json({
     status: "success",
     data: grp,
   });
 });
 
 exports.updateGroup = catchAsync(async (req, res, next) => {
-  const { user } = req.body;
-  const grpName = req.params.grpName;
+  const { user, grpName } = req.body;
 
   const grp = await Group.findOne({ name: grpName });
-  user = await User.findOne({ tgHandle: user });
+  const user_detail = await User.findOne({ tgHandle: user });
 
   let users = grp.users;
-  users.push(user._id);
+  users.push(user_detail._id);
 
   let grpUpdated = await Group.findByIdAndUpdate(grp._id, {
     users,
