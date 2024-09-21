@@ -87,13 +87,9 @@ exports.addExpense = catchAsync(async (req, res, next) => {
       amount,
       inGroup,
     });
-    const updatedExpenses = group.expenses;
-    updatedExpenses.push(expense);
-    const updatedGroup = {
-      expenses: updatedExpenses,
-    };
-
-    const newGroup = await Group.findByIdAndUpdate(group._id, updatedGroup);
+    const exps = await Expense.find({ inGroup: inGroup });
+    const updatedgrps = { expenses: exps };
+    await Group.findByIdAndUpdate(inGroup, updatedgrps);
     if (expense) {
       return res.status(200).json({
         status: "success",
@@ -190,13 +186,9 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
             amount: updatedAmt,
             inGroup,
           });
-          const updatedExpenses = group.expenses;
-          updatedExpenses.push(expense);
-          const updatedGroup = {
-            expenses: updatedExpenses,
-          };
-
-          const newGroup = await Group.findByIdAndUpdate(inGroup, updatedGroup);
+          const exps2 = await Expense.find({ inGroup: inGroup });
+          const updatedgrps2 = { expenses: exps2 };
+          await Group.findByIdAndUpdate(inGroup, updatedgrps2);
         }
       } else {
         const updatedAmt = amount / n;
@@ -208,13 +200,9 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
           amount: updatedAmt,
           inGroup,
         });
-        const updatedExpenses = group.expenses;
-        updatedExpenses.push(expense);
-        const updatedGroup = {
-          expenses: updatedExpenses,
-        };
-
-        const newGroup = await Group.findByIdAndUpdate(inGroup, updatedGroup);
+        const exps = await Expense.find({ inGroup: inGroup });
+        const updatedgrps = { expenses: exps };
+        await Group.findByIdAndUpdate(inGroup, updatedgrps);
       }
     }
   }
