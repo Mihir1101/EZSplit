@@ -30,7 +30,7 @@ async def get_balance(update: Update, context: CallbackContext):
     data1=get_res.json()
     print(data1)
     bal=data1["data"]
-    await update.message.reply_text(f"Hey {update.effective_user.first_name}! Your multisig wallet balance is ${bal}.")
+    await update.message.reply_text(f"Hey {update.effective_user.first_name}! Your multisig wallet balance is {bal} eth.")
         
 
 async def get_user_balance(update: Update, context: CallbackContext):
@@ -53,7 +53,7 @@ async def get_user_balance(update: Update, context: CallbackContext):
                 owe=obj["owe"]
                 if(owe):
                 # Print the fields
-                    text += f"{amt} to {name} [{handle}]\n" 
+                    text += f"{amt} eth to {name} [{handle}]\n" 
 
             text+="You are owed \n"
             for obj in data:
@@ -64,7 +64,7 @@ async def get_user_balance(update: Update, context: CallbackContext):
                 owe=obj["owe"]
                 if (not owe):
                 # Print the fields
-                    text += f"{amt} from {name} [{handle}]\n" 
+                    text += f"{amt} eth from {name} [{handle}]\n" 
 
         print(text)
         await update.message.reply_text(text)
@@ -159,7 +159,7 @@ async def add_expense(update: Update, context: CallbackContext):
         from_user = context.args[0]
         from_user = from_user[1:]
         amt = (context.args[2])
-        to_user = context.args[4]
+        to_user = context.args[5]
         to_user = to_user[1:]
         group_name = update.effective_chat.title
         print(added_by, from_user, to_user, amt, group_name)
@@ -217,7 +217,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
     
 async def settle(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
     userhandle = update.effective_user.username
-    await update.message.reply_text(f"hey! {update.effective_user.first_name}, you can choose any expense to settle.")
     grpname = update.effective_chat.title
     
     url = f'http://localhost:5000/api/expenses/get/{grpname}/{userhandle}'
@@ -245,7 +244,7 @@ async def settle(update: Update, context: ContextTypes.DEFAULT_TYPE)->None:
 
         buttons = [[InlineKeyboardButton(text=button_data[item], callback_data=handles[item]+","+str(amounts[item]))] for item in range(len(button_data))]
         reply_markup = InlineKeyboardMarkup(buttons)
-        await update.message.reply_text(":)",reply_markup=reply_markup)
+        await update.message.reply_text(f"hey! {update.effective_user.first_name}, you can choose any expense to settle.",reply_markup=reply_markup)
         
     except requests.exceptions.RequestException as e:
         print('Error:', e)

@@ -1,8 +1,10 @@
+const Web3 = require("web3");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const Expense = require("./../models/expenseModel");
 const Group = require("../models/groupModel");
 const User = require("../models/userModel");
+const group = require("../models/groupModel");
 exports.addExpense = catchAsync(async (req, res, next) => {
   const { addedByhandle, fromUserhandle, toUserhandle, amt, grpName } =
     req.body;
@@ -290,145 +292,31 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   });
 });
 
-// const createTransaction = async (safeAddress,destination, amount) => {
-//  amount = ethers.utils.parseUnits(amount.toString(), 'ether').toString();
-//  const safeTransactionData= {
-//      to: destination,
-//      data: '0x',
-//      value: amount
-//  }
+exports.settle = catchAsync(async (req, res, next) => {
+  const { amt, to, grpname, tgHandle } = req.body;
+  senderAddress = PROCESS.env.SENDER_ADDRESS;
+  receiverAddress = PROCESS.env.RECEIVE_ADDRESS;
+  senderPrivateKey = PROCESS.env.PRIVATE_KEY;
+  valueToSend = amt;
+  const nonce = await web3.eth.getTransactionCount(senderAddress, "latest"); // Get the nonce
 
-//  const ethAdapter = await getEthAdapter(provider);
-//  const safeSDK = await Safe.create({
-//      ethAdapter,
-//      safeAddress
-//  })
+  const tx = {
+    from: senderAddress,
+    to: receiverAddress,
+    value: valueToSend,
+    gas: 21000,
+    nonce: nonce,
+    chainId: 11155111, // Mainnet chain ID. Use 3 for Ropsten testnet, 5 for Goerli, etc.
+  };
 
-//  if (sponsored) {
-//      return TransactionUtils.relayTransaction(safeTransactionData, safeSDK)
-//  }
-
-//  const chainId = await ethAdapter.getChainId();
-//  const chainInfo = CHAIN_INFO[chainId.toString()];
-
-//  // Create a Safe transaction with the provided parameters
-//  const safeTransaction = await safeSDK.createTransaction({ safeTransactionData })
-
-//  // Deterministic hash based on transaction parameters
-//  const safeTxHash = await safeSDK.getTransactionHash(safeTransaction)
-
-//  // Sign transaction to verify that the transaction is coming from owner 1
-//  const senderSignature = await safeSDK.signTransactionHash(safeTxHash)
-
-//  const txServiceUrl = chainInfo.transactionServiceUrl;
-//  const safeService = new SafeApiKit({ txServiceUrl, ethAdapter })
-//  await safeService.proposeTransaction({
-//      safeAddress,
-//      safeTransactionData: safeTransaction.data,
-//      safeTxHash,
-//      senderAddress: (await ethAdapter.getSignerAddress())!,
-//      senderSignature: senderSignature.data,
-//  })
-//  console.log(`Transaction sent to the Safe Service:
-//  ${chainInfo.transactionServiceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
-// }
-
-// const relayTransaction = async (safeTransactionData: MetaTransactionData, safeSDK: Safe) => {
-
-//  // Create a transaction object
-//  safeTransactionData = {
-//      ...safeTransactionData,
-//      operation: OperationType.Call
-//  }
-
-//  // Usually a limit of 21000 is used but for smart contract interactions, you can increase to 100000 because of the more complex interactions.
-//  const gasLimit = '100000'
-//  const options: MetaTransactionOptions = {
-//      gasLimit: ethers.BigNumber.from(gasLimit),
-//      isSponsored: true
-//  }
-
-//  // Get Gelato Relay API Key: https://relay.gelato.network/
-//  const GELATO_RELAY_API_KEY=process.env.REACT_APP_GELATO_RELAY_API_KEY!
-//  const relayAdapter = new GelatoRelayAdapter(GELATO_RELAY_API_KEY)
-
-//  //Prepare the transaction
-//  const safeTransaction = await safeSDK.createTransaction({
-//      safeTransactionData
-//  })
-
-//  const signedSafeTx = await safeSDK.signTransaction(safeTransaction)
-
-//  const encodedTx = safeSDK.getContractManager().safeContract.encode('execTransaction', [
-//      signedSafeTx.data.to,
-//      signedSafeTx.data.value,
-//      signedSafeTx.data.data,
-//      signedSafeTx.data.operation,
-//      signedSafeTx.data.safeTxGas,
-//      signedSafeTx.data.baseGas,
-//      signedSafeTx.data.gasPrice,
-//      signedSafeTx.data.gasToken,
-//      signedSafeTx.data.refundReceiver,
-//      signedSafeTx.encodedSignatures()
-//  ])
-
-//  const relayTransaction: RelayTransaction = {
-//      target: safeSDK.getAddress(),
-//      encodedTransaction: encodedTx,
-//      chainId: await safeSDK.getChainId(),
-//      options
-//  }
-//  const response = await relayAdapter.relayTransaction(relayTransaction)
-
-//  console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${response.taskId}`)
-
-// }
-
-// const confirmTransaction = async (safeAddress: string, safeTxHash: string) => {
-
-//  const ethAdapter = await this.getEthAdapter();
-//  const chainId = await ethAdapter.getChainId();
-//  const chainInfo = CHAIN_INFO[chainId.toString()];
-//  const txServiceUrl = chainInfo.transactionServiceUrl;
-//  const safeService = new SafeApiKit({ txServiceUrl, ethAdapter })
-
-//    const safeSdk = await Safe.create({
-//      ethAdapter,
-//      safeAddress
-//    })
-
-//    const signature = await safeSdk.signTransactionHash(safeTxHash)
-//    const response = await safeService.confirmTransaction(safeTxHash, signature.data)
-
-//  console.log(`Transaction confirmed to the Safe Service:
-//  ${txServiceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
-//    return response
-// }
-
-// const executeTransaction = async (safeAddress: string, safeTxHash: string) => {
-
-//  const ethAdapter = await this.getEthAdapter();
-//  const chainId = await ethAdapter.getChainId();
-//  const chainInfo = CHAIN_INFO[chainId.toString()];
-//  const txServiceUrl = chainInfo.transactionServiceUrl;
-//  const safeService = new SafeApiKit({ txServiceUrl, ethAdapter })
-
-//  const safeSdk = await Safe.create({
-//  ethAdapter,
-//  safeAddress
-//  })
-
-//  const safeTransaction = await safeService.getTransaction(safeTxHash)
-//  const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
-//  const receipt = await executeTxResponse.transactionResponse?.wait()!
-
-//  console.log('Transaction executed:')
-//  console.log(`${chainInfo.blockExplorerUrl}/tx/${receipt.transactionHash}`)
-
-//  console.log(`Transaction confirmed to the Safe Service:
-//  ${txServiceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
-//  return receipt
-// }
-
-// //add transaction
-// exports.settleExpense = catchAsync(async (req, res, next) => {});
+  const signedTransaction = await web3.eth.accounts.signTransaction(
+    tx,
+    senderPrivateKey
+  );
+  const rawTransaction = signedTransaction.rawTransaction;
+  const receipt = await web3.eth.sendSignedTransaction(rawTransaction);
+  console.log("Transaction successful with receipt:", receipt);
+  
+  const grp = await Group.findOne({name: grpname});
+  const exps = await Expense.find({inGroup: group._id, })
+});
