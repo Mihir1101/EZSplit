@@ -50,8 +50,8 @@ exports.updateGroup = catchAsync(async (req, res, next) => {
 
   const grp = await Group.findOne({ name: grpName });
   const user_detail = await User.findOne({ tgHandle: user });
-
-  if (!grp.users.includes(user_detail._id)) {
+  const users = grp.users;
+  if (!users.includes(user_detail._id)) {
     let users = grp.users;
     users.push(user_detail._id);
 

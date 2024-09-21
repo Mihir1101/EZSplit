@@ -3,7 +3,6 @@ const AppError = require("./../utils/appError");
 const Expense = require("./../models/expenseModel");
 const Group = require("../models/groupModel");
 const User = require("../models/userModel");
-// const {getEthAdapter}=require("./")
 exports.addExpense = catchAsync(async (req, res, next) => {
   const { addedByhandle, fromUserhandle, toUserhandle, amt, grpName } =
     req.body;
@@ -225,15 +224,36 @@ exports.getExpensesForGroup = catchAsync(async (req, res, next) => {
 
 exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   const { grpName, tgHandle } = req.params;
-  const userId = (await User.findOne({ tgHandle }))._id;
+  const user = await User.findOne({ tgHandle: tgHandle });
+  console.log(user);
   const expensesOfGroupAndUser = await Expense.findOne({
     name: grpName,
-    toUser: userId,
+    toUser: user._id,
+  });
+  console.log(expensesOfGroupAndUser);
+  let final_expenses = [];
+
+  let owe = true;
+  expensesOfGroupAndUser.forEach(async (expenses) => {
+    let fromUser = await User.findById(expenses.fromUser);
+    const [name, tgHandle] = [fromUser.name, fromUser.tgHandle];
+    final_expenses.push({ name, tgHandle, amount, owe });
   });
 
+  owe = false;
+  const expensesOfGroupAndUser2 = await Expense.findOne({
+    name: grpName,
+    fromUser: user._id,
+  });
+  expensesOfGroupAndUser2.forEach(async (expenses) => {
+    let toUser = await User.findById(expenses.toUser);
+    const [name, tgHandle] = [toUser.name, toUser.tgHandle];
+    final_expenses.push({ name, tgHandle, amount, owe });
+  });
+  console.log(final_expenses);
   res.status(200).json({
     message: "success",
-    data: expensesOfGroupAndUser,
+    data: final_expenses,
   });
 });
 
@@ -276,7 +296,7 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
 //      senderAddress: (await ethAdapter.getSignerAddress())!,
 //      senderSignature: senderSignature.data,
 //  })
-//  console.log(`Transaction sent to the Safe Service: 
+//  console.log(`Transaction sent to the Safe Service:
 //  ${chainInfo.transactionServiceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
 // }
 
@@ -303,9 +323,9 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
 //  const safeTransaction = await safeSDK.createTransaction({
 //      safeTransactionData
 //  })
-   
+
 //  const signedSafeTx = await safeSDK.signTransaction(safeTransaction)
- 
+
 //  const encodedTx = safeSDK.getContractManager().safeContract.encode('execTransaction', [
 //      signedSafeTx.data.to,
 //      signedSafeTx.data.value,
@@ -328,7 +348,7 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
 //  const response = await relayAdapter.relayTransaction(relayTransaction)
 
 //  console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${response.taskId}`)
- 
+
 // }
 
 // const confirmTransaction = async (safeAddress: string, safeTxHash: string) => {
@@ -338,16 +358,16 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
 //  const chainInfo = CHAIN_INFO[chainId.toString()];
 //  const txServiceUrl = chainInfo.transactionServiceUrl;
 //  const safeService = new SafeApiKit({ txServiceUrl, ethAdapter })
-   
+
 //    const safeSdk = await Safe.create({
 //      ethAdapter,
 //      safeAddress
 //    })
-   
+
 //    const signature = await safeSdk.signTransactionHash(safeTxHash)
 //    const response = await safeService.confirmTransaction(safeTxHash, signature.data)
 
-//  console.log(`Transaction confirmed to the Safe Service: 
+//  console.log(`Transaction confirmed to the Safe Service:
 //  ${txServiceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
 //    return response
 // }
@@ -359,20 +379,20 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
 //  const chainInfo = CHAIN_INFO[chainId.toString()];
 //  const txServiceUrl = chainInfo.transactionServiceUrl;
 //  const safeService = new SafeApiKit({ txServiceUrl, ethAdapter })
-   
+
 //  const safeSdk = await Safe.create({
 //  ethAdapter,
 //  safeAddress
 //  })
-   
+
 //  const safeTransaction = await safeService.getTransaction(safeTxHash)
 //  const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
 //  const receipt = await executeTxResponse.transactionResponse?.wait()!
- 
+
 //  console.log('Transaction executed:')
 //  console.log(`${chainInfo.blockExplorerUrl}/tx/${receipt.transactionHash}`)
 
-//  console.log(`Transaction confirmed to the Safe Service: 
+//  console.log(`Transaction confirmed to the Safe Service:
 //  ${txServiceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
 //  return receipt
 // }

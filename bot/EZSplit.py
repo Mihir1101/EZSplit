@@ -6,12 +6,45 @@ import asyncio
 
 # async def get_balance(update: Update, context: CallbackContext):
 
-# async def get_balance(update: Update, context: CallbackContext):
-#     url = 'http://localhost:5000/api/expenses/get'
-#     username = update.effective_user.username
-#     grpname= update.effective_chat.title
-#     params = {"grpName":grpname,"tgHandle": username}
-#     try:
+async def get_user_balance(update: Update, context: CallbackContext):
+    username = update.effective_user.username
+    grpname= update.effective_chat.title
+    url = 'http://localhost:5000/api/expenses/get/{grpname}/{username}'
+    # params = {"grpName":grpname,"tgHandle": username}
+    try:
+        get_res=requests.get(url)
+        data1=get_res.json()
+        data=data1["data"]
+        print(data)
+
+        text="You owe\n"
+        for obj in data:
+            # Assuming each object has 'name' and 'tgHandle' fields
+            name = obj['name']  # Provide default if key is not found
+            handle = obj['tgHandle']  # Provide default if key is not found
+            amt=obj['amount']
+            owe=obj["owe"]
+            if(owe):
+                # Print the fields
+                text += f"{amt} to {name} [{handle}]\n" 
+
+        text+="You ask\n"
+        for obj in data:
+            # Assuming each object has 'name' and 'tgHandle' fields
+            name = obj['name']  # Provide default if key is not found
+            handle = obj['tgHandle']  # Provide default if key is not found
+            amt=obj['amount']
+            owe=obj["owe"]
+            if (not owe):
+                # Print the fields
+                text += f"{amt} from {name} [{handle}]\n" 
+
+        print(text)
+        await update.message.reply_text(text)
+        
+    except requests.exceptions.RequestException as e:
+        print('Error:', e)
+        return None
         
 
 async def members_info(update: Update, context: CallbackContext):
@@ -47,7 +80,7 @@ async def make_group(update: Update, context: CallbackContext) -> None:
     grpName = update.effective_chat.title
     
     try:
-        url = 'http://localhost:5000/api/group/create'
+        url = 'http://localhost:5000/api/group/createGroup'
         obj = {"grpName":grpName, "user":adminHandle}
         post_res = requests.post(url, json = obj)
         if (post_res.status_code == 200):
@@ -180,6 +213,7 @@ def main():
     application.add_handler(CommandHandler('group', make_group))
     application.add_handler(CommandHandler('join', join_group))
     application.add_handler(CommandHandler('members', members_info))
+    application.add_handler(CommandHandler('myBalance', get_user_balance))
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     application.add_handler(CallbackQueryHandler(button_call_2))
     application.run_polling()
