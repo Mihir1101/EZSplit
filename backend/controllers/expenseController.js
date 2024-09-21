@@ -7,18 +7,19 @@ const User = require("../models/userModel");
 exports.addExpense = catchAsync(async (req, res, next) => {
   const { addedByhandle, fromUserhandle, toUserhandle, amt, grpName } =
     req.body;
+
+  //error handling for null condition
   const addedBy = (await User.findOne({ tgHandle: addedByhandle }))._id;
   const fromUser = (await User.findOne({ tgHandle: fromUserhandle }))._id;
   const toUser = (await User.findOne({ tgHandle: toUserhandle }))._id;
   const inGroup = (await Group.findOne({ name: grpName }))._id;
   const amount = Number(amt);
   if (fromUser == toUser) {
-    res.status(200).json({
+    return res.status(200).json({
       message: "cannot add expense ",
     });
   }
 
-  console.log(amount);
   // if (A,B) already exists
   const ex = await Expense.findOne({
     fromUser: fromUser,
@@ -50,7 +51,7 @@ exports.addExpense = catchAsync(async (req, res, next) => {
     });
 
     if (exUpdated) {
-      res.status(200).json({
+      return res.status(200).json({
         status: "success",
         data: exUpdated,
       });
@@ -72,13 +73,13 @@ exports.addExpense = catchAsync(async (req, res, next) => {
     });
 
     if (exUpdated) {
-      res.status(200).json({
+      return res.status(200).json({
         status: "success",
         data: exUpdated,
       });
     }
   } else {
-    console.log(amount);
+    const group = await Group.findById(inGroup);
     const expense = await Expense.create({
       addedBy,
       fromUser,
@@ -86,9 +87,15 @@ exports.addExpense = catchAsync(async (req, res, next) => {
       amount,
       inGroup,
     });
+    const updatedExpenses = group.expenses;
+    updatedExpenses.push(expense);
+    const updatedGroup = {
+      expenses: updatedExpenses,
+    };
 
+    const newGroup = await Group.findByIdAndUpdate(group._id, updatedGroup);
     if (expense) {
-      res.status(200).json({
+      return res.status(200).json({
         status: "success",
         data: expense,
       });
@@ -99,12 +106,11 @@ exports.addExpense = catchAsync(async (req, res, next) => {
 });
 
 exports.addExpenseAll = catchAsync(async (req, res, next) => {
+  //error handling for null condition
   const { addedByhandle, fromUserhandle, amount, grpName } = req.body;
-  const addedBy = await User.findOne({ tgHandle: addedByhandle })._id;
-  const fromUser = await User.findOne({ tgHandle: fromUserhandle })._id;
-  const inGroup = await Group.findOne({ name: grpName })._id;
-  //create expense in the database
-  let expenses = [];
+  const addedBy = (await User.findOne({ tgHandle: addedByhandle }))._id;
+  const fromUser = (await User.findOne({ tgHandle: fromUserhandle }))._id;
+  const inGroup = (await Group.findOne({ name: grpName }))._id;
 
   const grp = await Group.findById(inGroup);
   const toUsers = grp.users;
@@ -142,6 +148,7 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
       } else if (ex2) {
         let prevAmt = ex2.amount;
         let updatedAmt = prevAmt - amount;
+        
         const updatedData = {
           addedBy,
           user, //B
@@ -155,6 +162,7 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
           runValidators: true, // Enforces schema validation
         });
       } else {
+        const group = await Group.findById(inGroup);
         const expense = await Expense.create({
           addedBy,
           fromUser,
@@ -162,19 +170,24 @@ exports.addExpenseAll = catchAsync(async (req, res, next) => {
           amount,
           inGroup,
         });
-        expenses.push(expense);
+        if (not(expense)) {
+          return next(new AppError("expense not created!", 404));
+        }
+        const updatedExpenses = group.expenses;
+        updatedExpenses.push(expense);
+        const updatedGroup = {
+          expenses: updatedExpenses,
+        };
+
+        const newGroup = await Group.findByIdAndUpdate(group._id, updatedGroup);
       }
     }
   }
 
-  if (expenses) {
-    res.status(200).json({
-      status: "success",
-      data: expenses,
-    });
-  } else {
-    return new AppError("expense not created", 404);
-  }
+  return res.status(200).json({
+    status: "success",
+    data: expenses,
+  });
 });
 
 exports.getExpensesForGroup = catchAsync(async (req, res, next) => {

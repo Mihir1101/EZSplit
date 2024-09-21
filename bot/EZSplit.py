@@ -1,9 +1,34 @@
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext, ContextTypes, MessageHandler, filters
+from telegram.error import TelegramError
 import asyncio
 
+groups = {}
+current_grp = []
+
 # async def get_balance(update: Update, context: CallbackContext):
+
+async def make_group(update: Update, context: CallbackContext) -> None:
+    global groups 
+    global current_grp
+    grpName = update.effective_chat.title
+    chat_id = update.effective_chat.id
+    admin = (await context.bot.get_chat_administrators(chat_id))[1]
+    current_grp += [admin.user.username]
+    groups[grpName] = current_grp
+    
+    try:
+        url = 'http://localhost:5000/api/group/createGroup'
+        obj = {"grpName":grpName, "users":current_grp}
+        post_res = requests.post(url, json = obj)
+        if (post_res.status_code == 200):
+            await update.message.reply_text("Added group!")
+        else:
+            await update.message.reply_text("Failed to add group!")            
+            
+    except TelegramError as e:
+        update.message.reply_text(f'Error: {e}')
     
 
 async def add_all(update: Update, context: CallbackContext):
@@ -36,8 +61,9 @@ async def add_expense(update: Update, context: CallbackContext):
         amt = (context.args[2])
         to_user = context.args[4]
         to_user = to_user[1:]
-        print(from_user, to_user, type(amt))
         group_name = update.effective_chat.title
+        print(added_by, from_user, to_user, amt, group_name)
+
         #addedBy, fromUser, toUser, amount, inGroup
         obj = {"addedByhandle" :added_by, "fromUserhandle" :from_user, "toUserhandle" :to_user, "amt" :amt, "grpName":group_name}
         post_res = requests.post(url, json = obj)
@@ -51,7 +77,11 @@ async def add_expense(update: Update, context: CallbackContext):
 async def welcome_new_members(update: Update, context: CallbackContext):
     for new_member in update.message.new_chat_members:
         bot_username = context.bot.username
-
+        grpName = update.effective_chat.title
+        #store new_member handle somewhere along with the group name, can store in 2d list in python script only 
+        current_grp+=[new_member.username]
+        groups[grpName] = current_grp
+        
         # Direct message link to the bot
         dm_link = f"https://t.me/{bot_username}"
 
@@ -106,6 +136,7 @@ def main():
     application.add_handler(CommandHandler('settle',settle))
     application.add_handler(CommandHandler('add', add_expense))
     application.add_handler(CommandHandler('addAll', add_all))
+    application.add_handler(CommandHandler('group', make_group))
     application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     application.add_handler(CallbackQueryHandler(button_call_2))
     application.run_polling()
