@@ -7,7 +7,7 @@ const express = require("express");
 const router = express.Router();
 
 router.route("/createUser").post(createUser);
+router.route("/ui/:accountAddr").get(getUser2);
 router.route("/getUser/:tgHandle").get(getUser);
-router.route("/getUser/ui/:accountAddr").get(getUser2);
 
 module.exports = router;
