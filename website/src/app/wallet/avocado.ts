@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import Web3 from "web3";
 import { createSafe } from "@instadapp/avocado";
 import avocadoV1ABI from "./abi/avocado-v1-abi.json";
 import avoForwarderV1ABI from "./abi/avo-forwarder-v1-abi.json";
@@ -63,6 +64,8 @@ const types = {
     ],
 };
 
+const web3 = new Web3();
+
 export const createMultiSig = async (userAddr:string) => {
     // -------------------------------- Setup -----------------------------------
 
@@ -78,8 +81,15 @@ export const createMultiSig = async (userAddr:string) => {
     const forwarder = new ethers.Contract(avoForwarderAddress, avoForwarderV1ABI, polygonProvider);
 
     const ownerAddress = userAddr; // Vitalik as owner EOA example
-    const index = "0";
-    const avocadoAddress = await forwarder.computeAvocado(ownerAddress, index)
+    const index = "1";
+    const avocadoAddress = await forwarder.computeAvocado(ownerAddress, index);
+    // const defaultAvocadoAddress = "0xB8fA67786Da2D8F7803E6f89C1b6BBd427bb6dFd";
+    // const avocado = new web3.eth.Contract(avocadoV1ABI, defaultAvocadoAddress);
+    // console.log({avocado});
+    // const owner = await avocado.methods.owner().call({from: ownerAddress});
+    // console.log(owner);
+    // const owner = await avocado.owner();
+    // console.log(owner);
     return avocadoAddress;
 }
 const polygonProvider = new ethers.providers.JsonRpcProvider("https://polygon-rpc.com");

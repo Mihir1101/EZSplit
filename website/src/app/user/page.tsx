@@ -23,50 +23,58 @@ export default function User() {
     setBalance(web3.utils.fromWei(weiBalance, "ether")); // Convert balance from Wei to Ether
   };
 
-  const fetchData = async () => {
-    if (!window.ethereum?.selectedAddress) {
-      router.push("/");
-    } else {
-      const selectedAccount = window.ethereum?.selectedAddress;
-      setAccount(selectedAccount);
-      fetchBalance(selectedAccount); // Fetch user's balance
+    const fetchData = async () => {
+        if (!window.ethereum?.selectedAddress) {
+            router.push("/");
+        } else {
+            const selectedAccount = window.ethereum?.selectedAddress;
+            setAccount(selectedAccount);
+            fetchBalance(selectedAccount);  // Fetch user's balance
 
-      console.log(`/api/user/ui/${selectedAccount}`);
-      try {
-        let response = await axios.get(`/api/user/ui/${selectedAccount}`);
-        response = response.data;
-        console.log(response);
-        const multisigData = response.data?.data || null;
-        if (multisigData) {
-          setMultisig(multisigData); // Set the multisig data
+            console.log(`/api/user/ui/${selectedAccount}`);
+            try {
+                // debugger;
+                // const response = await axios.get(`/api/user/ui/${selectedAccount}`).then((res) => res.data);
+                const response = await fetch(`http://localhost:5000/api/user/ui/${selectedAccount}`);;
+                // const multisigData = response.data?.data || null;
+                // if (multisigData) {
+                //     setMultisig(multisigData);  // Set the multisig data
+                // }
+                // console.log(multisigData);
+                // console.log(selectedAccount);
+                if (response.status === 200) {
+                    const data = await response.json();
+                    console.log(data);
+                    if (data.data) {
+                        setMultisig(data.data.multisigAddress);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching multisig", error);
+            }
         }
-        console.log(multisigData);
-        console.log(selectedAccount);
-      } catch (error) {
-        console.error("Error fetching multisig", error);
-      }
     }
-  };
 
   useEffect(() => {
     const handleChainChanged = () => {
       window.location.reload(); // Reload the page on chain/network change
     };
 
-    const handleAccountsChanged = async (...args: unknown[]) => {
-      const accounts = args[0] as string[];
-      if (accounts.length > 0) {
-        const newAccount = accounts[0];
-        setAccount(newAccount);
-        fetchBalance(newAccount); // Fetch balance for the new account
-      } else {
-        router.push("/"); // If no accounts are connected, redirect to the home page
-      }
-    };
+        const handleAccountsChanged = async (...args: unknown[]) => {
+            const accounts = args[0] as string[];
+            if (accounts.length > 0) {
+                const newAccount = accounts[0];
+                setAccount(newAccount);
+                fetchBalance(newAccount);  // Fetch balance for the new account
+            } else {
+                router.push("/");  // If no accounts are connected, redirect to the home page
+            }
+        };
 
-    window.ethereum?.on("chainChanged", handleChainChanged); // Chain/network change listener
-    window.ethereum?.on("accountsChanged", handleAccountsChanged); // Account change listener
-    fetchData();
+        fetchData();
+
+        window.ethereum?.on('chainChanged', handleChainChanged);  // Chain/network change listener
+        window.ethereum?.on('accountsChanged', handleAccountsChanged);  // Account change listener
 
     return () => {
       window.ethereum?.removeListener("chainChanged", handleChainChanged);
@@ -74,18 +82,24 @@ export default function User() {
     };
   }, []);
 
-  return (
-    <>
-      <Background />
-      <div className="min-h-screen flex items-center justify-start bg-black-100 flex-col">
-        <div className="h-20 w-screen flex items-center justify-between p-14 px-8 text-xl">
-          <Image src={Logo} alt="Logo" className="h-24 w-auto" />
-          <Connect />
-        </div>
-        <div className="z-10">
-          {multisig ? <Dashboard /> : <CreateMultisigBtn />}
-        </div>
-      </div>
-    </>
-  );
+    return (
+        <>
+            <Background />
+            <div className="max-h-screen flex items-center justify-start bg-black-100 flex-col">
+                <div className="z-10">
+                            <div className="h-20 w-screen flex items-center justify-between p-14 px-8 text-xl">
+                                <Image src={Logo} alt="Logo" className="h-24 w-auto" />
+                                <Connect />
+                            </div>
+                    {multisig ? (
+                        <Dashboard />
+                    ) : (
+                        <>
+                            <CreateMultisigBtn />
+                        </>
+                    )}
+                </div>
+            </div>
+        </>
+    );
 }

@@ -4,7 +4,7 @@ import { axios } from "../axios/axios";
 import { Input } from "@/components/ui/input";
 import Web3 from "web3";
 import { useEffect } from "react";
-import { createMultiSig, ERC20Transfer } from "@/app/wallet/avocado";
+import { createMultiSig } from "@/app/wallet/avocado";
 import { toast, ToastContainer } from "react-toastify";
 import { useRouter } from "next/navigation";
 
@@ -32,9 +32,7 @@ export const CreateMultisigBtn: React.FC = () => {
                 balance: 0,
             });
             
-            toast.success(`Multisig created successfully. ${multiSig}`,{
-                onClose: () => router.push("/dashboard"),
-            });
+            toast.success(`Multisig created successfully. ${multiSig}`);
         } catch (error) {
             console.error("Error creating multisig:", error);
         }
