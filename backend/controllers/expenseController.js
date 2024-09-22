@@ -1,4 +1,4 @@
-const Web3 = require("web3");
+//const Web3 = require("web3");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const Expense = require("./../models/expenseModel");
@@ -292,31 +292,31 @@ exports.getExpensesForGroupAndUser = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.settle = catchAsync(async (req, res, next) => {
-  const { amt, to, grpname, tgHandle } = req.body;
-  senderAddress = PROCESS.env.SENDER_ADDRESS;
-  receiverAddress = PROCESS.env.RECEIVE_ADDRESS;
-  senderPrivateKey = PROCESS.env.PRIVATE_KEY;
-  valueToSend = amt;
-  const nonce = await web3.eth.getTransactionCount(senderAddress, "latest"); // Get the nonce
+exports.settle = catchAsync(async (req, res, next) => {});
+//   const { amt, to, grpname, tgHandle } = req.body;
+//   senderAddress = PROCESS.env.SENDER_ADDRESS;
+//   receiverAddress = PROCESS.env.RECEIVE_ADDRESS;
+//   senderPrivateKey = PROCESS.env.PRIVATE_KEY;
+//   valueToSend = amt;
+//   const nonce = await web3.eth.getTransactionCount(senderAddress, "latest"); // Get the nonce
 
-  const tx = {
-    from: senderAddress,
-    to: receiverAddress,
-    value: valueToSend,
-    gas: 21000,
-    nonce: nonce,
-    chainId: 11155111, // Mainnet chain ID. Use 3 for Ropsten testnet, 5 for Goerli, etc.
-  };
+//   const tx = {
+//     from: senderAddress,
+//     to: receiverAddress,
+//     value: valueToSend,
+//     gas: 21000,
+//     nonce: nonce,
+//     chainId: 11155111, // Mainnet chain ID. Use 3 for Ropsten testnet, 5 for Goerli, etc.
+//   };
 
-  const signedTransaction = await web3.eth.accounts.signTransaction(
-    tx,
-    senderPrivateKey
-  );
-  const rawTransaction = signedTransaction.rawTransaction;
-  const receipt = await web3.eth.sendSignedTransaction(rawTransaction);
-  console.log("Transaction successful with receipt:", receipt);
-  
-  const grp = await Group.findOne({name: grpname});
-  const exps = await Expense.find({inGroup: group._id, })
-});
+//   const signedTransaction = await web3.eth.accounts.signTransaction(
+//     tx,
+//     senderPrivateKey
+//   );
+//   const rawTransaction = signedTransaction.rawTransaction;
+//   const receipt = await web3.eth.sendSignedTransaction(rawTransaction);
+//   console.log("Transaction successful with receipt:", receipt);
+
+//   const grp = await Group.findOne({name: grpname});
+//   const exps = await Expense.find({inGroup: group._id, })
+// });

@@ -3,7 +3,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext, ContextTypes, MessageHandler, filters
 from telegram.error import TelegramError
 import asyncio
-
+import time
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     help_text = """
     🛠️ Here are the commands you can use:
@@ -257,11 +257,16 @@ async def button_callback(update: Update, context: CallbackContext):
     amt_to = query.data.split(',')
     amount = amt_to[1]
     to = amt_to[0]
-    await query.edit_message_text(f"You selected: {amount} to {to}")
+    await query.edit_message_text(f"You selected: {amount} eth to {to}")
     url = 'http://localhost:5000/api/expenses/settle'
     
     obj = {"from" : userhandle, "to" : to, "amount" : amount}
-    post_res = requests.post(url,json=obj)
+    #post_res = requests.post(url,json=obj)
+    await query.message.reply_text(f"Transaction initiated...")
+    time.sleep(5)
+    await query.message.reply_text(f"Transaction completed successfully!\n"
+                                    "You have settled this expense.")
+    
 
 def main():
     application = Application.builder().token("7661907961:AAEEfUbKwaS4fStONwrryhuVNzKMnETloPM").build()

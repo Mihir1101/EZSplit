@@ -3,6 +3,7 @@ const {
   addExpenseAll,
   getExpensesForGroup,
   getExpensesForGroupAndUser,
+  settle
 } = require("./../controllers/expenseController");
 const express = require("express");
 const router = express.Router();
